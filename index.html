@@ -384,7 +384,7 @@ async function init() {
   buildTabs();
   if (SHEET_CSV_URL) {
     try {
-      const res = await fetch("https://api.allorigins.win/raw?url=" + encodeURIComponent(SHEET_CSV_URL));
+      const res = await fetch("https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(SHEET_CSV_URL));
       const text = await res.text();
       allData = parseCSV(text);
     } catch(e) {
