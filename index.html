@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>canmas coffee — 精品豆單</title>
+<meta name="description" content="肯馬仕精品咖啡 CANMAS Coffee，竹北預約制精品咖啡bistro，精選世界各地莊園咖啡豆">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Noto+Serif+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --obsidian: #07070D;
+    --gold: #C9A84C;
+    --gold-light: #E8C96A;
+    --gold-pale: #F5EDD6;
+    --surface: #111118;
+    --surface2: #1A1A24;
+    --surface3: #22222F;
+    --border: rgba(201,168,76,0.18);
+    --border-soft: rgba(255,255,255,0.07);
+    --text-primary: #F0EBE0;
+    --text-secondary: #9A9285;
+    --text-muted: #55524A;
+    --line-green: #06C755;
+    --danger: #E05555;
+    --warning: #C9A84C;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--obsidian);
+    color: var(--text-primary);
+    font-family: 'Noto Serif TC', serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--obsidian);
+    border-bottom: 0.5px solid var(--border);
+    padding: 1.5rem 1.25rem 1.25rem;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+  .brand-name {
+    font-family: 'Cinzel', serif;
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--gold);
+  }
+  .brand-sub { font-size: 11px; color: var(--text-secondary); letter-spacing: 0.12em; margin-top: 2px; }
+  .line-btn {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--line-green);
+    color: #fff;
+    border: none; border-radius: 24px;
+    padding: 8px 16px;
+    font-size: 13px; font-weight: 500;
+    font-family: 'Noto Serif TC', serif;
+    cursor: pointer; text-decoration: none;
+    white-space: nowrap; flex-shrink: 0;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .line-btn:hover { opacity: 0.88; }
+  .line-btn:active { transform: scale(0.97); }
+  .line-icon { width: 18px; height: 18px; }
+
+  .search-wrap { position: relative; }
+  .search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); opacity: 0.4; pointer-events: none; }
+  .search-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 0.5px solid var(--border-soft);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-family: 'Noto Serif TC', serif;
+    font-size: 14px;
+    padding: 9px 12px 9px 34px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-input::placeholder { color: var(--text-muted); }
+  .search-input:focus { border-color: rgba(201,168,76,0.4); }
+
+  /* TABS */
+  .tabs-wrap {
+    background: var(--obsidian);
+    border-bottom: 0.5px solid var(--border);
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .tabs-wrap::-webkit-scrollbar { display: none; }
+  .tabs { display: flex; padding: 0 1.25rem; gap: 0; }
+  .tab {
+    padding: 10px 14px;
+    font-size: 12px; font-family: 'Noto Serif TC', serif;
+    color: var(--text-secondary);
+    cursor: pointer; white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s;
+  }
+  .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+  .tab:hover:not(.active) { color: var(--text-primary); }
+
+  /* COUNT BAR */
+  .count-bar {
+    padding: 7px 1.25rem;
+    font-size: 11px; color: var(--text-muted);
+    background: var(--surface);
+    border-bottom: 0.5px solid var(--border-soft);
+  }
+
+  /* ITEMS */
+  .list { padding-bottom: 5rem; }
+  .item {
+    padding: 16px 1.25rem;
+    border-bottom: 0.5px solid var(--border-soft);
+    transition: background 0.12s;
+  }
+  .item:hover { background: var(--surface2); }
+  .item.sold-out { opacity: 0.35; }
+
+  .item-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+  .item-name { font-size: 14px; font-weight: 500; color: var(--text-primary); line-height: 1.5; flex: 1; }
+
+  .price-block { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0; }
+  .price-row { display: flex; align-items: center; gap: 5px; }
+  .price-label { font-size: 10px; color: var(--text-muted); letter-spacing: 0.05em; }
+  .price-value { font-size: 13px; color: var(--gold); font-weight: 500; white-space: nowrap; }
+  .price-single { font-size: 13px; color: var(--gold); font-weight: 500; }
+
+  .item-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 7px; align-items: center; }
+  .tag {
+    font-size: 10px; padding: 2px 8px; border-radius: 20px;
+    border: 0.5px solid var(--border-soft);
+    color: var(--text-secondary);
+    background: var(--surface3);
+    letter-spacing: 0.03em;
+  }
+  .tag.process { color: rgba(201,168,76,0.8); border-color: rgba(201,168,76,0.25); background: rgba(201,168,76,0.07); }
+  .tag.sold { color: var(--danger); border-color: rgba(224,85,85,0.3); background: rgba(224,85,85,0.08); }
+  .tag.presale { color: #E8B84A; border-color: rgba(232,184,74,0.3); background: rgba(232,184,74,0.08); }
+  .tag.award { color: var(--gold-light); border-color: rgba(232,201,106,0.35); background: rgba(232,201,106,0.07); }
+
+  .item-notes { font-size: 12px; color: var(--text-secondary); line-height: 1.7; }
+
+  /* INQUIRY FLOAT BTN */
+  .float-btn {
+    position: fixed; bottom: 1.5rem; right: 1.25rem; z-index: 200;
+    display: flex; align-items: center; gap: 8px;
+    background: var(--line-green);
+    color: #fff; text-decoration: none;
+    border-radius: 28px; padding: 12px 20px;
+    font-size: 14px; font-weight: 500;
+    font-family: 'Noto Serif TC', serif;
+    box-shadow: 0 4px 20px rgba(6,199,85,0.35);
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .float-btn:hover { opacity: 0.9; }
+  .float-btn:active { transform: scale(0.97); }
+
+  /* NO RESULT */
+  .no-result { padding: 4rem 1.25rem; text-align: center; color: var(--text-muted); font-size: 14px; }
+
+  /* FOOTER */
+  .footer {
+    padding: 2rem 1.25rem;
+    border-top: 0.5px solid var(--border);
+    text-align: center;
+  }
+  .footer-brand { font-family: 'Cinzel', serif; font-size: 14px; color: var(--gold); margin-bottom: 12px; letter-spacing: 0.1em; }
+  .footer-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px 20px; margin-bottom: 12px; }
+  .footer-links a { font-size: 12px; color: var(--text-secondary); text-decoration: none; }
+  .footer-links a:hover { color: var(--gold); }
+  .footer-meta { font-size: 11px; color: var(--text-muted); }
+
+  /* LOADING */
+  .loading { padding: 3rem 1.25rem; text-align: center; color: var(--text-muted); font-size: 13px; }
+
+  /* DESKTOP */
+  @media (min-width: 640px) {
+    .header, .tabs, .count-bar { max-width: 640px; margin: 0 auto; }
+    .tabs-wrap .tabs { max-width: 640px; margin: 0 auto; }
+    .list { max-width: 640px; margin: 0 auto; }
+    .footer { max-width: 640px; margin: 0 auto; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div style="max-width:640px; margin:0 auto;">
+    <div class="header-top">
+      <div>
+        <div class="brand-name">canmas coffee</div>
+        <div class="brand-sub">精品咖啡豆單 · 竹北預約制</div>
+      </div>
+      <a class="line-btn" href="https://line.me/ti/p/@canmas" target="_blank" rel="noopener">
+        <svg class="line-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 5.92 2 10.72c0 3.1 1.76 5.84 4.44 7.53-.06.22-.4 1.42-.46 1.65-.07.28.1.28.22.2.09-.05 1.44-.95 2.03-1.34.57.08 1.16.12 1.77.12 5.52 0 10-3.92 10-8.72S17.52 2 12 2z"/>
+        </svg>
+        想詢問
+      </a>
+    </div>
+    <div class="search-wrap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input class="search-input" id="search" type="text" placeholder="搜尋豆名、風味、產地…" oninput="render()">
+    </div>
+  </div>
+</header>
+
+<div class="tabs-wrap">
+  <div class="tabs" id="tabs"></div>
+</div>
+<div class="count-bar" id="count-bar"></div>
+<div class="list" id="list"><div class="loading">載入豆單中…</div></div>
+
+<div class="footer">
+  <div class="footer-brand">CANMAS · 肯馬仕有限公司</div>
+  <div class="footer-links">
+    <a href="https://line.me/ti/p/@canmas" target="_blank">LINE @canmas</a>
+    <a href="tel:03-2605030">03-2605030</a>
+    <a href="tel:0935319135">0935-319-135</a>
+    <a href="mailto:canmas13@gmail.com">canmas13@gmail.com</a>
+    <a href="https://www.canmas.com.tw" target="_blank">canmas.com.tw</a>
+  </div>
+  <div class="footer-meta">新竹縣竹北市光明六路東二段36號2樓 · 預約制</div>
+</div>
+
+<a class="float-btn" href="https://line.me/ti/p/@canmas" target="_blank" rel="noopener">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2C6.48 2 2 5.92 2 10.72c0 3.1 1.76 5.84 4.44 7.53-.06.22-.4 1.42-.46 1.65-.07.28.1.28.22.2.09-.05 1.44-.95 2.03-1.34.57.08 1.16.12 1.77.12 5.52 0 10-3.92 10-8.72S17.52 2 12 2z"/>
+  </svg>
+  LINE 詢問下單
+</a>
+
+<script>
+// =============================================
+// 【設定區】— 把 Google Sheets 發布的 CSV 網址貼這裡
+// =============================================
+const SHEET_CSV_URL = "";
+// 範例：const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/xxxxx/pub?output=csv";
+
+// 沒有設定 SHEET_CSV_URL 時，使用本地靜態資料
+const STATIC_DATA = [
+  {region:"中美洲",name:"聖海倫娜 Bamboo Hedge Estate Screen",process:"水洗",notes:"花香，春草植物，黃肉李，柑橘",half:"",one:"16800",soldOut:true,presale:true,award:false},
+  {region:"中美洲",name:"牙賈加藍山",process:"水洗",notes:"咖啡中的王者，枝果、杏仁果、焦糖、李子，香氣優雅，入喉滑順回甘",half:"",one:"6930",soldOut:true,presale:true,award:false},
+  {region:"中美洲",name:"巴拿馬翡翠莊園紅標藝伎 GEISHA",process:"水洗",notes:"明亮的花朵香、佛手柑、荔枝香氣，漸漸轉化帶玫瑰香，入喉帶有英式紅茶韻，整體花果香感明顯，層次鮮明豐富，杯測總成績達90分以上",half:"6825",one:"",soldOut:true,presale:true,award:true},
+  {region:"中美洲",name:"巴拿馬翡翠莊園綠標藝伎 GEISHA",process:"水洗",notes:"香甜撲鼻的檸檬皮、佛手柑、茉莉與水蜜桃香氣，風味優雅細緻",half:"",one:"5510",soldOut:false,presale:true,award:false},
+  {region:"中美洲",name:"巴拿馬藍標藝伎 GEISHA",process:"水洗",notes:"甜花香，伯爵柔香，柑橘，杏桃",half:"",one:"2630",soldOut:false,presale:true,award:false},
+  {region:"中美洲",name:"瓜地馬拉安提瓜泉拉卡摩那花神",process:"水洗",notes:"奶香、紅莓、榛果、柑橘、黑李",half:"550",one:"1050",soldOut:false,presale:false,award:true},
+  {region:"中美洲",name:"瓜地馬拉薇薇特南果",process:"水洗",notes:"濃郁巧克力風味、西洋梨、蘋果、肉桂的香氣，帶出溫和的火烤雪松木香和焦糖，層次豐富",half:"440",one:"820",soldOut:false,presale:false,award:false},
+  {region:"南美洲",name:"哥倫比亞梅德琪",process:"水洗",notes:"榛果、可可、香草植物、微花香、柑橘",half:"440",one:"840",soldOut:false,presale:false,award:true},
+  {region:"南美洲",name:"巴西喜拉朵日曬",process:"日曬",notes:"胡桃、核果、杏仁、花生糖、蔗糖",half:"380",one:"690",soldOut:false,presale:false,award:false},
+  {region:"南美洲",name:"巴西摩吉安娜瑪瓏聖塔利亞莊園",process:"日曬",notes:"乾香帶榛果、焦糖、牛奶巧克力，厚實飽滿、甜度佳、尾韻綿長",half:"380",one:"690",soldOut:false,presale:false,award:false},
+  {region:"非洲",name:"衣索匹亞非洲之星卡法森林香水檸檬藝妓",process:"水洗",notes:"香瓜、甜桃、柑橘、蜜蘋果、白花、番茄、香水檸檬",half:"690",one:"1280",soldOut:false,presale:false,award:true},
+  {region:"非洲",name:"衣索匹亞古吉格蕾娜茉莉蜜糖藝妓一級",process:"水洗",notes:"野薑花、柑橘、水梨、薑檸檬",half:"690",one:"1280",soldOut:false,presale:false,award:true},
+  {region:"非洲",name:"衣索耶加雪菲果丁丁",process:"水洗",notes:"入口後花香氣息、白柚、可可、李子甜感明顯，回韻強烈，層次豐富",half:"590",one:"1155",soldOut:false,presale:false,award:false},
+  {region:"非洲",name:"衣索耶加雪夫G2",process:"水洗",notes:"白花、柑橘、桃子、荔枝，香味豐富",half:"485",one:"950",soldOut:false,presale:false,award:false},
+  {region:"非洲",name:"肯亞 涅里產區 蜂蜜 TOP AA級",process:"水洗",notes:"新鮮莓果、焦糖、柚子香、咖啡獎果甜、明亮多汁、清脆香甜",half:"550",one:"1000",soldOut:false,presale:false,award:false},
+  {region:"非洲",name:"衣索比亞 卡法森林WushWush日曬",process:"日曬",notes:"柚香、白桃、葡萄、紅槿甜、桂花釀",half:"600",one:"1150",soldOut:false,presale:false,award:true},
+  {region:"非洲",name:"衣索比亞 耶加雪菲 喬昂萊 水洗",process:"水洗",notes:"白柚、白花、黃檸檬",half:"550",one:"1080",soldOut:false,presale:false,award:false},
+  {region:"非洲",name:"衣索比亞 耶加雪菲 紅蜜",process:"水洗",notes:"佛手柑、檸檬、雞蛋花",half:"550",one:"1080",soldOut:false,presale:false,award:false},
+  {region:"非洲",name:"衣索比亞利姆獅王花蜜藝妓",process:"水洗",notes:"獨特的花蜜香氣，精緻的柑橘、白花香與紅槿甜感",half:"750",one:"1450",soldOut:false,presale:false,award:false},
+  {region:"太平洋",name:"夏威夷阿里安娜可娜 KONA",process:"水洗",notes:"香草植物、蔗糖、微花香；美國白宮客客專用，極致香氣油脂醇厚。2007、2011年贏得夏威夷全洲可娜節發春第一名",half:"",one:"5560",soldOut:false,presale:true,award:true},
+  {region:"太平洋",name:"夏威夷可娜圓豆",process:"水洗",notes:"堅果香甜與木果的熟香、奶油般滑順口感，明亮的酸味帶出回甘及水果的香甜",half:"1330",one:"2630",soldOut:true,presale:false,award:true},
+  {region:"亞產區",name:"印尼黃金曼特寧",process:"水洗",notes:"黑巧克力、堅果、雪松、焦糖、奶油、甜藥草、甜感圓潤，風味濃厚紮實",half:"520",one:"1000",soldOut:false,presale:false,award:false},
+  {region:"職人精選",name:"肯馬仕義式特調",process:"水洗",notes:"肯馬仕精選莊園豆，做拿鐵可保有濃厚的咖啡香",half:"440",one:"840",soldOut:false,presale:false,award:false},
+  {region:"職人精選",name:"肯馬仕黃金曼巴",process:"水洗",notes:"精準深度烘焙，香濃甘醇、快速回甘、層次分明",half:"440",one:"840",soldOut:false,presale:false,award:false},
+  {region:"職人精選",name:"花漾清晨（Floral Morning）",process:"水洗",notes:"花香馥郁、柑橘清新，濃郁的茉莉花香與柑橘酸甜交織，餘韻溫柔悠長",half:"440",one:"840",soldOut:false,presale:false,award:true},
+  {region:"職人精選",name:"莓果戀曲（Berry Sonata）",process:"水洗",notes:"濃郁莓果、柔順甜感，甜美的莓果香氣與焦糖餘韻，口感濃郁且甘平衡",half:"460",one:"890",soldOut:false,presale:false,award:true},
+  {region:"職人精選",name:"風姿卓越特調咖啡",process:"水洗",notes:"花果香與酸甜層次，展現茉莉花香、莓果甜感、柑橘酸郁以及圓潤餘韻，適合手沖或冷萃",half:"460",one:"890",soldOut:false,presale:false,award:true},
+  {region:"精選濾掛",name:"肯馬仕經典總匯（20入）",process:"混和",notes:"精選各式肯馬仕經典暢銷豆，共20包",half:"",one:"840",soldOut:false,presale:false,award:false},
+  {region:"精選濾掛",name:"肯馬仕行家總匯（20入）",process:"混和",notes:"精選肯馬仕經典暢銷豆＋精品行家豆，共20包",half:"",one:"1120",soldOut:false,presale:false,award:true},
+  {region:"精選濾掛",name:"肯馬仕莊園總匯（10入）",process:"混和",notes:"精選肯馬仕經典暢銷豆＋精品行家豆，共10包",half:"",one:"480",soldOut:false,presale:false,award:false},
+  {region:"精選濾掛",name:"瓜地馬拉薇薇特南果（10入）",process:"水洗",notes:"核桃、杏仁、黑巧克力、麥芽糖",half:"",one:"420",soldOut:false,presale:false,award:false},
+  {region:"精選濾掛",name:"印尼黃金曼特寧三次手選（10入）",process:"水洗",notes:"黑巧克力、堅果、雪松、焦糖、奶油、甜藥草",half:"",one:"480",soldOut:false,presale:false,award:false},
+  {region:"精選濾掛",name:"衣索匹亞耶加雪夫G2（10入）",process:"水洗",notes:"花香、白桃、柑橘、紅莓，香味豐富",half:"",one:"530",soldOut:false,presale:false,award:false},
+  {region:"精選濾掛",name:"肯亞非洲草原AA Top（10入）",process:"水洗",notes:"青蘋果、梅子、楓糖，風味多變、豐富而複雜",half:"",one:"580",soldOut:false,presale:false,award:false},
+  {region:"精選濾掛",name:"哥倫比亞梅德琪（10入）",process:"水洗",notes:"榛果、可可、香草植物、微花香、柑橘",half:"",one:"420",soldOut:false,presale:false,award:false},
+];
+
+const REGIONS = ["全部","中美洲","南美洲","非洲","太平洋","亞產區","職人精選","精選濾掛"];
+let activeRegion = "全部";
+let allData = [];
+
+function parsePrice(raw) {
+  if (!raw) return { half: "", one: "" };
+  raw = raw.trim();
+  const m = raw.match(/半磅[^\d]*(\d+)[^一\/]*[一\/]?[磅]?[^\d]*(\d+)?/);
+  if (m) return { half: m[1] || "", one: m[2] || "" };
+  const single = raw.match(/(\d+)/);
+  return { half: "", one: single ? single[1] : raw };
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split("\n");
+  const headers = lines[0].split(",").map(h => h.trim().replace(/^"|"$/g, ""));
+  return lines.slice(1).map(line => {
+    const cols = [];
+    let cur = "", inQ = false;
+    for (let c of line) {
+      if (c === '"') { inQ = !inQ; continue; }
+      if (c === ',' && !inQ) { cols.push(cur); cur = ""; continue; }
+      cur += c;
+    }
+    cols.push(cur);
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = (cols[i] || "").trim());
+    const pp = parsePrice(obj.price || "");
+    return {
+      region: obj.region || "",
+      name: obj.name || "",
+      process: obj.process || "",
+      notes: obj.notes || "",
+      half: obj.half || pp.half,
+      one: obj.one || pp.one,
+      soldOut: (obj.soldOut || "").toUpperCase() === "TRUE",
+      presale: (obj.presale || "").toUpperCase() === "TRUE",
+      award: (obj.award || "").toUpperCase() === "TRUE",
+    };
+  }).filter(d => d.name);
+}
+
+function buildPriceHTML(d) {
+  if (d.soldOut) return `<span class="price-single" style="color:var(--text-muted)">售完</span>`;
+  if (d.half && d.one) return `
+    <div class="price-block">
+      <div class="price-row"><span class="price-label">半磅</span><span class="price-value">$${d.half}</span></div>
+      <div class="price-row"><span class="price-label">一磅</span><span class="price-value">$${d.one}</span></div>
+    </div>`;
+  if (d.one) return `<div class="price-block"><div class="price-row"><span class="price-value">$${d.one}</span></div></div>`;
+  if (d.half) return `<div class="price-block"><div class="price-row"><span class="price-label">半磅</span><span class="price-value">$${d.half}</span></div></div>`;
+  return "";
+}
+
+function render() {
+  const q = document.getElementById("search").value.trim().toLowerCase();
+  const filtered = allData.filter(d => {
+    const rm = activeRegion === "全部" || d.region === activeRegion;
+    const sm = !q || d.name.toLowerCase().includes(q) || d.notes.toLowerCase().includes(q) || d.process.includes(q) || d.region.includes(q);
+    return rm && sm;
+  });
+  document.getElementById("count-bar").textContent = `共 ${filtered.length} 款`;
+  const list = document.getElementById("list");
+  if (!filtered.length) { list.innerHTML = '<div class="no-result">找不到符合的咖啡豆</div>'; return; }
+  list.innerHTML = filtered.map(d => `
+    <div class="item${d.soldOut ? " sold-out" : ""}">
+      <div class="item-top">
+        <div class="item-name">${d.name}</div>
+        ${buildPriceHTML(d)}
+      </div>
+      <div class="item-tags">
+        <span class="tag process">${d.process}</span>
+        ${d.soldOut ? '<span class="tag sold">售完</span>' : ""}
+        ${d.presale && !d.soldOut ? '<span class="tag presale">預訂制</span>' : ""}
+        ${d.award ? '<span class="tag award">★ 精選</span>' : ""}
+      </div>
+      <div class="item-notes">${d.notes}</div>
+    </div>`).join("");
+}
+
+function setTab(r) {
+  activeRegion = r;
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.r === r));
+  render();
+}
+
+function buildTabs() {
+  const tabs = document.getElementById("tabs");
+  REGIONS.forEach(r => {
+    const t = document.createElement("div");
+    t.className = "tab" + (r === "全部" ? " active" : "");
+    t.dataset.r = r; t.textContent = r;
+    t.onclick = () => setTab(r);
+    tabs.appendChild(t);
+  });
+}
+
+async function init() {
+  buildTabs();
+  if (SHEET_CSV_URL) {
+    try {
+      const res = await fetch(SHEET_CSV_URL);
+      const text = await res.text();
+      allData = parseCSV(text);
+    } catch(e) {
+      console.warn("無法讀取 Google Sheets，使用靜態資料", e);
+      allData = STATIC_DATA;
+    }
+  } else {
+    allData = STATIC_DATA;
+  }
+  render();
+}
+
+init();
+</script>
+</body>
+</html>
