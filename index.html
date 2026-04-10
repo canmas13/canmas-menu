@@ -384,7 +384,7 @@ async function init() {
   buildTabs();
   if (SHEET_CSV_URL) {
     try {
-      const res = await fetch(SHEET_CSV_URL);
+      const res = await fetch("https://corsproxy.io/?" + encodeURIComponent(SHEET_CSV_URL));
       const text = await res.text();
       allData = parseCSV(text);
     } catch(e) {
