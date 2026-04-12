@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Noto+Serif+TC:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-:root {
-  --obsidian:#07070D; --gold:#C9A84C; --gold-light:#E8C96A;
-  --surface:#111118; --surface2:#1A1A24; --surface3:#22222F;
-  --border:rgba(201,168,76,0.18); --border-soft:rgba(255,255,255,0.07);
-  --text-primary:#F0EBE0; --text-secondary:#9A9285; --text-muted:#55524A;
-  --line-green:#06C755; --danger:#E05555;
+:root{
+  --obsidian:#07070D;--gold:#C9A84C;--gold-light:#E8C96A;
+  --surface:#111118;--surface2:#1A1A24;--surface3:#22222F;
+  --border:rgba(201,168,76,0.18);--border-soft:rgba(255,255,255,0.07);
+  --text-primary:#F0EBE0;--text-secondary:#9A9285;--text-muted:#55524A;
+  --line-green:#06C755;--danger:#E05555;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
@@ -61,6 +61,10 @@ body{background:var(--obsidian);color:var(--text-primary);font-family:'Noto Seri
 .item-notes{font-size:12px;color:var(--text-secondary);line-height:1.7;margin-bottom:10px;}
 
 .add-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.qty-wrap{display:flex;align-items:center;gap:4px;}
+.qty-btn{width:28px;height:28px;background:var(--surface3);border:0.5px solid var(--border-soft);border-radius:6px;color:var(--text-primary);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
+.qty-btn:hover{background:var(--surface2);border-color:var(--gold);}
+.qty-val{font-size:13px;color:var(--text-primary);min-width:20px;text-align:center;}
 .size-select{background:var(--surface3);border:0.5px solid var(--border-soft);border-radius:6px;color:var(--text-primary);font-family:'Noto Serif TC',serif;font-size:12px;padding:5px 8px;outline:none;cursor:pointer;}
 .size-select:focus{border-color:var(--gold);}
 .add-btn{display:flex;align-items:center;gap:5px;background:transparent;border:0.5px solid var(--gold);border-radius:6px;color:var(--gold);font-family:'Noto Serif TC',serif;font-size:12px;padding:5px 12px;cursor:pointer;transition:background 0.15s;}
@@ -75,27 +79,35 @@ body{background:var(--obsidian);color:var(--text-primary);font-family:'Noto Seri
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;opacity:0;pointer-events:none;transition:opacity 0.25s;}
 .overlay.show{opacity:1;pointer-events:all;}
 
-.cart-panel{position:fixed;bottom:0;left:0;right:0;max-width:640px;margin:0 auto;background:var(--surface);border-top:0.5px solid var(--border);border-radius:20px 20px 0 0;z-index:400;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);max-height:90vh;overflow-y:auto;}
+.cart-panel{position:fixed;bottom:0;left:0;right:0;max-width:640px;margin:0 auto;background:var(--surface);border-top:0.5px solid var(--border);border-radius:20px 20px 0 0;z-index:400;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);max-height:92vh;overflow-y:auto;}
 .cart-panel.show{transform:translateY(0);}
 .cart-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.25rem 1rem;border-bottom:0.5px solid var(--border-soft);position:sticky;top:0;background:var(--surface);z-index:1;}
 .cart-title{font-size:16px;font-weight:500;color:var(--text-primary);}
 .cart-close{background:none;border:none;color:var(--text-secondary);font-size:22px;cursor:pointer;padding:0 4px;}
 .cart-close:hover{color:var(--text-primary);}
 .cart-items{padding:0.75rem 1.25rem;}
-.cart-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--border-soft);gap:8px;}
-.cart-item-name{font-size:13px;color:var(--text-primary);flex:1;line-height:1.4;}
-.cart-item-size{font-size:11px;color:var(--text-muted);margin-top:2px;}
-.cart-item-remove{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:0 4px;flex-shrink:0;}
+.cart-item{display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--border-soft);gap:8px;}
+.cart-item-info{flex:1;}
+.cart-item-name{font-size:13px;color:var(--text-primary);line-height:1.4;}
+.cart-item-detail{font-size:11px;color:var(--text-muted);margin-top:3px;}
+.cart-item-subtotal{font-size:12px;color:var(--gold);margin-top:2px;}
+.cart-item-remove{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:0 4px;flex-shrink:0;margin-top:2px;}
 .cart-item-remove:hover{color:var(--danger);}
 .cart-empty{padding:2rem;text-align:center;color:var(--text-muted);font-size:13px;}
 
+.cart-total{padding:12px 1.25rem;border-top:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.cart-total-label{font-size:13px;color:var(--text-secondary);}
+.cart-total-amount{font-size:18px;color:var(--gold);font-weight:500;}
+
 .order-form{padding:1rem 1.25rem 1.5rem;border-top:0.5px solid var(--border);}
-.form-title{font-size:14px;color:var(--text-secondary);margin-bottom:1rem;}
+.form-section-title{font-size:13px;color:var(--text-secondary);margin-bottom:1rem;padding-bottom:6px;border-bottom:0.5px solid var(--border-soft);}
 .form-group{margin-bottom:12px;}
 .form-label{font-size:12px;color:var(--text-secondary);display:block;margin-bottom:5px;}
+.form-label span{color:var(--danger);}
 .form-input{width:100%;background:var(--surface2);border:0.5px solid var(--border-soft);border-radius:8px;color:var(--text-primary);font-family:'Noto Serif TC',serif;font-size:14px;padding:10px 12px;outline:none;transition:border-color 0.2s;}
 .form-input:focus{border-color:rgba(201,168,76,0.5);}
 .form-input::placeholder{color:var(--text-muted);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .submit-btn{width:100%;background:var(--gold);color:var(--obsidian);border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:500;font-family:'Noto Serif TC',serif;cursor:pointer;margin-top:4px;transition:opacity 0.15s;}
 .submit-btn:hover{opacity:0.88;}
 .submit-btn:disabled{opacity:0.5;cursor:not-allowed;}
@@ -104,7 +116,8 @@ body{background:var(--obsidian);color:var(--text-primary);font-family:'Noto Seri
 .success-panel{padding:2.5rem 1.25rem;text-align:center;}
 .success-icon{font-size:44px;margin-bottom:12px;}
 .success-title{font-size:17px;font-weight:500;color:var(--text-primary);margin-bottom:8px;}
-.success-msg{font-size:13px;color:var(--text-secondary);line-height:1.7;}
+.success-msg{font-size:13px;color:var(--text-secondary);line-height:1.8;}
+.order-num{font-size:12px;color:var(--gold);margin-top:10px;letter-spacing:0.05em;}
 
 .footer{padding:2rem 1.25rem;border-top:0.5px solid var(--border);text-align:center;max-width:640px;margin:0 auto;}
 .footer-brand{font-family:'Cinzel',serif;font-size:14px;color:var(--gold);margin-bottom:12px;letter-spacing:0.1em;}
@@ -154,15 +167,14 @@ body{background:var(--obsidian);color:var(--text-primary);font-family:'Noto Seri
 
 <button class="cart-fab" id="cartFab" onclick="openCart()" style="display:none">
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-  詢問清單
+  購物清單
   <span class="cart-badge" id="cartBadge">0</span>
 </button>
 
 <div class="overlay" id="overlay" onclick="closeCart()"></div>
-
 <div class="cart-panel" id="cartPanel">
   <div class="cart-header">
-    <div class="cart-title">詢問清單</div>
+    <div class="cart-title">購物清單</div>
     <button class="cart-close" onclick="closeCart()">×</button>
   </div>
   <div id="cartBody"></div>
@@ -170,15 +182,16 @@ body{background:var(--obsidian);color:var(--text-primary);font-family:'Noto Seri
 
 <script>
 // =============================================
-// 【設定區】
+// 【設定區】貼上您的網址
 // =============================================
-const SHEET_CSV_URL = ""; // Google Sheets CSV 網址
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzUjfmTNqqJXmbkyOhYMLcLAB3hza1NpcwP_T2MUknlV9lhXdE0CI4xEgakTYrOPb4h/exec"; // Google Apps Script 部署網址（設定後自動寫入試算表）
+const SHEET_CSV_URL = "";        // Google Sheets CSV 網址
+const APPS_SCRIPT_URL = "";      // Google Apps Script 部署網址
 
+// =============================================
 const STATIC_DATA = [
   {region:"中美洲",name:"聖海倫娜 Bamboo Hedge Estate Screen",process:"水洗",notes:"花香，春草植物，黃肉李，柑橘",half:"",one:"16800",soldOut:true,presale:true,award:false},
   {region:"中美洲",name:"牙賈加藍山",process:"水洗",notes:"咖啡中的王者，枝果、杏仁果、焦糖、李子，香氣優雅，入喉滑順回甘",half:"",one:"6930",soldOut:true,presale:true,award:false},
-  {region:"中美洲",name:"巴拿馬翡翠莊園紅標藝伎 GEISHA",process:"水洗",notes:"明亮的花朵香、佛手柑、荔枝香氣，漸漸轉化帶玫瑰香，整體花果香感明顯，層次鮮明豐富，杯測總成績達90分以上",half:"6825",one:"",soldOut:true,presale:true,award:true},
+  {region:"中美洲",name:"巴拿馬翡翠莊園紅標藝伎 GEISHA",process:"水洗",notes:"明亮的花朵香、佛手柑、荔枝香氣，漸漸轉化帶玫瑰香，整體花果香感明顯，層次鮮明豐富",half:"6825",one:"",soldOut:true,presale:true,award:true},
   {region:"中美洲",name:"巴拿馬翡翠莊園綠標藝伎 GEISHA",process:"水洗",notes:"香甜撲鼻的檸檬皮、佛手柑、茉莉與水蜜桃香氣，風味優雅細緻",half:"",one:"5510",soldOut:false,presale:true,award:false},
   {region:"中美洲",name:"巴拿馬藍標藝伎 GEISHA",process:"水洗",notes:"甜花香，伯爵柔香，柑橘，杏桃",half:"",one:"2630",soldOut:false,presale:true,award:false},
   {region:"中美洲",name:"瓜地馬拉安提瓜泉拉卡摩那花神",process:"水洗",notes:"奶香、紅莓、榛果、柑橘、黑李",half:"550",one:"1050",soldOut:false,presale:false,award:true},
@@ -195,7 +208,7 @@ const STATIC_DATA = [
   {region:"非洲",name:"衣索比亞 耶加雪菲 喬昂萊 水洗",process:"水洗",notes:"白柚、白花、黃檸檬",half:"550",one:"1080",soldOut:false,presale:false,award:false},
   {region:"非洲",name:"衣索比亞 耶加雪菲 紅蜜",process:"水洗",notes:"佛手柑、檸檬、雞蛋花",half:"550",one:"1080",soldOut:false,presale:false,award:false},
   {region:"非洲",name:"衣索比亞利姆獅王花蜜藝妓",process:"水洗",notes:"獨特的花蜜香氣，精緻的柑橘、白花香與紅槿甜感",half:"750",one:"1450",soldOut:false,presale:false,award:false},
-  {region:"太平洋",name:"夏威夷阿里安娜可娜 KONA",process:"水洗",notes:"香草植物、蔗糖、微花香；美國白宮客客專用，極致香氣油脂醇厚。2007、2011年贏得夏威夷全洲可娜節發春第一名",half:"",one:"5560",soldOut:false,presale:true,award:true},
+  {region:"太平洋",name:"夏威夷阿里安娜可娜 KONA",process:"水洗",notes:"香草植物、蔗糖、微花香；美國白宮專用，極致香氣油脂醇厚。2007、2011年贏得夏威夷全洲可娜節發春第一名",half:"",one:"5560",soldOut:false,presale:true,award:true},
   {region:"太平洋",name:"夏威夷可娜圓豆",process:"水洗",notes:"堅果香甜與木果的熟香、奶油般滑順口感，明亮的酸味帶出回甘及水果的香甜",half:"1330",one:"2630",soldOut:true,presale:false,award:true},
   {region:"亞產區",name:"印尼黃金曼特寧",process:"水洗",notes:"黑巧克力、堅果、雪松、焦糖、奶油、甜藥草、甜感圓潤，風味濃厚紮實",half:"520",one:"1000",soldOut:false,presale:false,award:false},
   {region:"職人精選",name:"肯馬仕義式特調",process:"水洗",notes:"肯馬仕精選莊園豆，做拿鐵可保有濃厚的咖啡香",half:"440",one:"840",soldOut:false,presale:false,award:false},
@@ -239,6 +252,15 @@ function buildSizeOptions(d){
   return o.join("");
 }
 
+// 數量控制
+const qtyMap={};
+function getQty(idx){return qtyMap[idx]||1;}
+function setQty(idx,v){
+  qtyMap[idx]=Math.max(1,v);
+  const el=document.getElementById(`qty-${idx}`);
+  if(el)el.textContent=qtyMap[idx];
+}
+
 function render(){
   const q=document.getElementById("search").value.trim().toLowerCase();
   const f=allData.filter(d=>{
@@ -263,9 +285,14 @@ function render(){
       <div class="item-notes">${d.notes}</div>
       ${canAdd?`<div class="add-row">
         <select class="size-select" id="size-${idx}">${buildSizeOptions(d)}</select>
+        <div class="qty-wrap">
+          <button class="qty-btn" onclick="setQty(${idx},getQty(${idx})-1)">−</button>
+          <span class="qty-val" id="qty-${idx}">1</span>
+          <button class="qty-btn" onclick="setQty(${idx},getQty(${idx})+1)">+</button>
+        </div>
         <button class="add-btn" onclick="addToCart(${idx})">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-          加入詢問清單
+          加入購物清單
         </button>
         <span class="added-label" id="added-${idx}">✓ 已加入</span>
       </div>`:""}
@@ -277,7 +304,11 @@ function addToCart(idx){
   const d=allData[idx];
   const sel=document.getElementById(`size-${idx}`);
   const[size,price]=sel.value.split("|");
-  cart.push({name:d.name,size,price});
+  const qty=getQty(idx);
+  // 同款同規格累加
+  const exist=cart.find(c=>c.name===d.name&&c.size===size);
+  if(exist){exist.qty+=qty;}
+  else{cart.push({name:d.name,size,price:Number(price),qty});}
   updateCartBadge();
   const lbl=document.getElementById(`added-${idx}`);
   if(lbl){lbl.style.display="inline";setTimeout(()=>lbl.style.display="none",1500);}
@@ -285,10 +316,13 @@ function addToCart(idx){
 
 function removeFromCart(i){cart.splice(i,1);updateCartBadge();renderCartBody();}
 
+function cartTotal(){return cart.reduce((s,c)=>s+c.price*c.qty,0);}
+
 function updateCartBadge(){
   const fab=document.getElementById("cartFab");
-  document.getElementById("cartBadge").textContent=cart.length;
-  fab.style.display=cart.length>0?"flex":"none";
+  const total=cart.reduce((s,c)=>s+c.qty,0);
+  document.getElementById("cartBadge").textContent=total;
+  fab.style.display=total>0?"flex":"none";
 }
 
 function openCart(){renderCartBody();document.getElementById("overlay").classList.add("show");document.getElementById("cartPanel").classList.add("show");}
@@ -296,49 +330,85 @@ function closeCart(){document.getElementById("overlay").classList.remove("show")
 
 function renderCartBody(){
   const el=document.getElementById("cartBody");
-  if(!cart.length){el.innerHTML=`<div class="cart-empty">尚未加入任何品項</div>`;return;}
+  if(!cart.length){el.innerHTML=`<div class="cart-empty">購物清單是空的<br><span style="font-size:11px;color:var(--text-muted);margin-top:6px;display:block">點選豆款旁的「加入購物清單」開始選購</span></div>`;return;}
+  const total=cartTotal();
   el.innerHTML=`
     <div class="cart-items">${cart.map((c,i)=>`
       <div class="cart-item">
-        <div><div class="cart-item-name">${c.name}</div><div class="cart-item-size">${c.size} · $${c.price}</div></div>
+        <div class="cart-item-info">
+          <div class="cart-item-name">${c.name}</div>
+          <div class="cart-item-detail">${c.size} × ${c.qty}</div>
+          <div class="cart-item-subtotal">$${(c.price*c.qty).toLocaleString()}</div>
+        </div>
         <button class="cart-item-remove" onclick="removeFromCart(${i})">×</button>
       </div>`).join("")}
     </div>
+    <div class="cart-total">
+      <span class="cart-total-label">合計（未含運費）</span>
+      <span class="cart-total-amount">$${total.toLocaleString()}</span>
+    </div>
     <div class="order-form">
-      <div class="form-title">填寫收件資訊</div>
-      <div class="form-group"><label class="form-label">姓名 *</label><input class="form-input" id="f-name" type="text" placeholder="您的姓名"></div>
-      <div class="form-group"><label class="form-label">聯絡電話 *</label><input class="form-input" id="f-phone" type="tel" placeholder="0912-345-678"></div>
-      <div class="form-group"><label class="form-label">寄送地址 *</label><input class="form-input" id="f-addr" type="text" placeholder="縣市、鄉鎮市區、路段門號"></div>
-      <div class="form-group"><label class="form-label">備註</label><input class="form-input" id="f-note" type="text" placeholder="烘焙度偏好、其他需求…"></div>
-      <button class="submit-btn" onclick="submitOrder()">送出詢問</button>
-      <div class="submit-note">送出後將開啟 LINE 與我們確認，並由我們回覆付款方式與出貨時程</div>
+      <div class="form-section-title">收件資訊</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">姓名 <span>*</span></label><input class="form-input" id="f-name" type="text" placeholder="您的姓名"></div>
+        <div class="form-group"><label class="form-label">聯絡電話 <span>*</span></label><input class="form-input" id="f-phone" type="tel" placeholder="09xx-xxx-xxx"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="f-email" type="email" placeholder="your@email.com（選填）"></div>
+      <div class="form-group"><label class="form-label">寄送地址 <span>*</span></label><input class="form-input" id="f-addr" type="text" placeholder="縣市、鄉鎮市區、路段門號"></div>
+      <div class="form-group"><label class="form-label">備註</label><input class="form-input" id="f-note" type="text" placeholder="烘焙度偏好、包裝需求…"></div>
+      <button class="submit-btn" onclick="submitOrder()">確認送出訂單</button>
+      <div class="submit-note">送出後將開啟 LINE 與您確認，並回覆付款方式與出貨時程</div>
     </div>`;
+}
+
+function genOrderNo(){
+  const d=new Date();
+  return`CM${d.getFullYear().toString().slice(2)}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}-${String(Math.floor(Math.random()*9000)+1000)}`;
 }
 
 async function submitOrder(){
   const name=document.getElementById("f-name").value.trim();
   const phone=document.getElementById("f-phone").value.trim();
+  const email=document.getElementById("f-email").value.trim();
   const addr=document.getElementById("f-addr").value.trim();
   const note=document.getElementById("f-note").value.trim();
-  if(!name||!phone||!addr){alert("請填寫姓名、電話及地址");return;}
+  if(!name||!phone||!addr){alert("請填寫姓名、電話及寄送地址");return;}
+
   const btn=document.querySelector(".submit-btn");
   btn.disabled=true;btn.textContent="送出中…";
-  const itemsText=cart.map(c=>`${c.name}（${c.size}）`).join("、");
+
+  const orderNo=genOrderNo();
   const ts=new Date().toLocaleString("zh-TW",{timeZone:"Asia/Taipei"});
+  const itemsText=cart.map(c=>`${c.name}（${c.size}×${c.qty}）`).join("、");
+  const total=cartTotal();
+
+  // 寫入 Google Sheets via Apps Script
   if(APPS_SCRIPT_URL){
-    try{await fetch(APPS_SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({timestamp:ts,name,phone,address:addr,items:itemsText,note})});}
-    catch(e){console.warn("試算表寫入失敗",e);}
+    try{
+      await fetch(APPS_SCRIPT_URL,{
+        method:"POST",mode:"no-cors",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({orderNo,timestamp:ts,name,phone,email,address:addr,items:itemsText,total,note,status:"待確認"})
+      });
+    }catch(e){console.warn("Sheets寫入失敗",e);}
   }
-  const lineMsg=`【肯馬仕咖啡詢問單】\n姓名：${name}\n電話：${phone}\n地址：${addr}\n品項：${itemsText}${note?"\n備註："+note:""}\n時間：${ts}`;
+
+  // LINE 訊息
+  const lineMsg=`【肯馬仕 新訂單 ${orderNo}】\n姓名：${name}\n電話：${phone}\n地址：${addr}\n品項：${itemsText}\n合計：$${total.toLocaleString()}${note?"\n備註："+note:""}\n時間：${ts}`;
   const lineURL=`https://line.me/ti/p/@canmas?text=${encodeURIComponent(lineMsg)}`;
+
+  const savedCart=[...cart];
+  cart=[];updateCartBadge();
+
   document.getElementById("cartBody").innerHTML=`
     <div class="success-panel">
       <div class="success-icon">✓</div>
-      <div class="success-title">詢問單已送出！</div>
-      <div class="success-msg">即將開啟 LINE 與您確認訂單<br>我們將盡快回覆付款方式與出貨時程</div>
+      <div class="success-title">訂單已送出！</div>
+      <div class="success-msg">即將開啟 LINE 與您確認付款方式<br>我們將盡快安排出貨</div>
+      <div class="order-num">訂單編號：${orderNo}</div>
     </div>`;
-  cart=[];updateCartBadge();
-  setTimeout(()=>{window.open(lineURL,"_blank");closeCart();},1500);
+
+  setTimeout(()=>{window.open(lineURL,"_blank");closeCart();},1800);
 }
 
 function setTab(r){activeRegion=r;document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.r===r));render();}
