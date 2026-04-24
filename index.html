@@ -6,126 +6,156 @@
 <title>canmas coffee — 精品豆單</title>
 <meta name="description" content="肯馬仕精品咖啡 CANMAS Coffee，竹北預約制精品咖啡bistro，精選世界各地莊園咖啡豆">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Noto+Serif+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Noto+Serif+TC:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-:root{
-  --obsidian:#07070D;--gold:#C9A84C;--gold-light:#E8C96A;
-  --surface:#111118;--surface2:#1A1A24;--surface3:#22222F;
-  --border:rgba(201,168,76,0.18);--border-soft:rgba(255,255,255,0.07);
-  --text-primary:#F0EBE0;--text-secondary:#9A9285;--text-muted:#55524A;
-  --line-green:#06C755;--danger:#E05555;
+:root {
+  --bg:          #111E4A;
+  --bg-1:        #162258;
+  --bg-2:        #1A2A6A;
+  --bg-3:        #1F3278;
+  --bg-4:        #253C8C;
+  --cobalt:      #1A3FC8;
+  --cobalt-bright:#2952D8;
+  --gold:        #D4A843;
+  --gold-light:  #EFC76A;
+  --gold-pale:   #F7E9C4;
+  --cream:       #EEE8D8;
+  --silver:      #B8C8E8;
+  --silver-dim:  #6878A8;
+  --silver-dark: #364070;
+  --line-green:  #06C755;
+  --danger:      #E05555;
+  --border-gold: rgba(212,168,67,0.28);
+  --border-blue: rgba(184,200,232,0.12);
+  --border-soft: rgba(184,200,232,0.08);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
-body{background:var(--obsidian);color:var(--text-primary);font-family:'Noto Serif TC',serif;min-height:100vh;-webkit-font-smoothing:antialiased;}
+body{background:var(--bg);color:var(--cream);font-family:'Noto Serif TC',serif;min-height:100vh;-webkit-font-smoothing:antialiased;}
 
-.header{background:var(--obsidian);border-bottom:0.5px solid var(--border);padding:1.5rem 1.25rem 1.25rem;position:sticky;top:0;z-index:100;}
-.header-inner{max-width:640px;margin:0 auto;}
-.header-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;}
-.brand-name{font-family:'Cinzel',serif;font-size:26px;font-weight:500;letter-spacing:0.08em;color:var(--gold);}
-.brand-sub{font-size:13px;color:var(--text-secondary);letter-spacing:0.12em;margin-top:2px;}
-.line-btn{display:flex;align-items:center;gap:6px;background:var(--line-green);color:#fff;border:none;border-radius:24px;padding:8px 16px;font-size:13px;font-weight:500;font-family:'Noto Serif TC',serif;cursor:pointer;text-decoration:none;white-space:nowrap;flex-shrink:0;transition:opacity 0.15s;}
+/* ── HEADER ── */
+.header{background:var(--bg-1);border-bottom:1px solid var(--border-gold);padding:1.5rem 1.5rem 1.25rem;position:sticky;top:0;z-index:100;}
+.header-inner{max-width:680px;margin:0 auto;}
+.header-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;}
+.brand-name{font-family:'Cinzel',serif;font-size:26px;font-weight:500;letter-spacing:0.1em;color:var(--gold);}
+.brand-sub{font-size:13px;color:var(--silver-dim);letter-spacing:0.15em;margin-top:4px;}
+.line-btn{display:flex;align-items:center;gap:7px;background:var(--line-green);color:#fff;border:none;border-radius:28px;padding:10px 18px;font-size:14px;font-weight:500;font-family:'Noto Serif TC',serif;cursor:pointer;text-decoration:none;white-space:nowrap;flex-shrink:0;transition:opacity 0.15s,transform 0.1s;}
 .line-btn:hover{opacity:0.88;}
+.line-btn:active{transform:scale(0.97);}
 .search-wrap{position:relative;}
-.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);opacity:0.4;pointer-events:none;}
-.search-input{width:100%;background:var(--surface2);border:0.5px solid var(--border-soft);border-radius:8px;color:var(--text-primary);font-family:'Noto Serif TC',serif;font-size:14px;padding:9px 12px 9px 34px;outline:none;transition:border-color 0.2s;}
-.search-input::placeholder{color:var(--text-muted);}
-.search-input:focus{border-color:rgba(201,168,76,0.4);}
+.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:0.4;pointer-events:none;}
+.search-input{width:100%;background:var(--bg-3);border:1px solid var(--border-blue);border-radius:10px;color:var(--cream);font-family:'Noto Serif TC',serif;font-size:15px;padding:11px 14px 11px 38px;outline:none;transition:border-color 0.2s;}
+.search-input::placeholder{color:var(--silver-dark);}
+.search-input:focus{border-color:rgba(212,168,67,0.5);}
 
-.tabs-wrap{background:var(--obsidian);border-bottom:0.5px solid var(--border);overflow-x:auto;scrollbar-width:none;}
+/* ── TABS ── */
+.tabs-wrap{background:var(--bg-1);border-bottom:1px solid var(--border-gold);overflow-x:auto;scrollbar-width:none;}
 .tabs-wrap::-webkit-scrollbar{display:none;}
-.tabs{display:flex;padding:0 1.25rem;max-width:640px;margin:0 auto;}
-.tab{padding:10px 14px;font-size:15px;font-family:'Noto Serif TC',serif;color:var(--text-secondary);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:color 0.15s;}
+.tabs{display:flex;padding:0 1.5rem;max-width:680px;margin:0 auto;}
+.tab{padding:13px 16px;font-size:15px;font-family:'Noto Serif TC',serif;color:var(--silver-dim);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:color 0.15s;letter-spacing:0.05em;}
 .tab.active{color:var(--gold);border-bottom-color:var(--gold);}
-.tab:hover:not(.active){color:var(--text-primary);}
+.tab:hover:not(.active){color:var(--silver);}
 
-.count-bar{padding:7px 1.25rem;font-size:11px;color:var(--text-muted);background:var(--surface);border-bottom:0.5px solid var(--border-soft);}
-.count-bar-inner{max-width:640px;margin:0 auto;}
+/* ── COUNT BAR ── */
+.count-bar{padding:8px 1.5rem;font-size:12px;color:var(--silver-dark);background:var(--bg-2);border-bottom:1px solid var(--border-soft);}
+.count-bar-inner{max-width:680px;margin:0 auto;}
 
-.list{padding-bottom:8rem;max-width:640px;margin:0 auto;}
-.item{padding:16px 1.25rem;border-bottom:0.5px solid var(--border-soft);transition:background 0.12s;}
-.item:hover{background:var(--surface2);}
-.item.sold-out{opacity:0.35;}
-.item-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px;}
-.item-name{font-size:16px;font-weight:500;color:var(--text-primary);line-height:1.5;flex:1;}
-.price-block{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;}
-.price-row{display:flex;align-items:center;gap:5px;}
-.price-label{font-size:10px;color:var(--text-muted);}
-.price-value{font-size:13px;color:var(--gold);font-weight:500;white-space:nowrap;}
-.item-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;}
-.tag{font-size:10px;padding:2px 8px;border-radius:20px;border:0.5px solid var(--border-soft);color:var(--text-secondary);background:var(--surface3);}
-.tag.process{color:rgba(201,168,76,0.8);border-color:rgba(201,168,76,0.25);background:rgba(201,168,76,0.07);}
-.tag.sold{color:var(--danger);border-color:rgba(224,85,85,0.3);background:rgba(224,85,85,0.08);}
-.tag.presale{color:#E8B84A;border-color:rgba(232,184,74,0.3);background:rgba(232,184,74,0.08);}
-.tag.award{color:var(--gold-light);border-color:rgba(232,201,106,0.35);background:rgba(232,201,106,0.07);}
-.item-notes{font-size:12px;color:var(--text-secondary);line-height:1.7;margin-bottom:10px;}
+/* ── ITEM LIST ── */
+.list{padding-bottom:9rem;max-width:680px;margin:0 auto;}
+.item{padding:20px 1.5rem;border-bottom:1px solid var(--border-soft);transition:background 0.12s;}
+.item:hover{background:var(--bg-2);}
+.item.sold-out{opacity:0.3;}
 
-.add-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.qty-wrap{display:flex;align-items:center;gap:4px;}
-.qty-btn{width:28px;height:28px;background:var(--surface3);border:0.5px solid var(--border-soft);border-radius:6px;color:var(--text-primary);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
-.qty-btn:hover{background:var(--surface2);border-color:var(--gold);}
-.qty-val{font-size:13px;color:var(--text-primary);min-width:20px;text-align:center;}
-.size-select{background:var(--surface3);border:0.5px solid var(--border-soft);border-radius:6px;color:var(--text-primary);font-family:'Noto Serif TC',serif;font-size:12px;padding:5px 8px;outline:none;cursor:pointer;}
+.item-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;}
+.item-name{font-size:16px;font-weight:500;color:var(--cream);line-height:1.5;flex:1;letter-spacing:0.02em;}
+
+.price-block{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
+.price-row{display:flex;align-items:center;gap:6px;}
+.price-label{font-size:11px;color:var(--silver-dim);letter-spacing:0.05em;}
+.price-value{font-size:15px;color:var(--gold-light);font-weight:500;white-space:nowrap;}
+
+.item-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+.tag{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border-blue);color:var(--silver-dim);background:var(--bg-3);letter-spacing:0.03em;}
+.tag.process{color:#A8C8F8;border-color:rgba(168,200,248,0.3);background:rgba(168,200,248,0.08);}
+.tag.sold{color:#F08080;border-color:rgba(224,85,85,0.35);background:rgba(224,85,85,0.08);}
+.tag.presale{color:#F0C870;border-color:rgba(240,200,112,0.35);background:rgba(240,200,112,0.07);}
+.tag.award{color:var(--gold-light);border-color:rgba(212,168,67,0.35);background:rgba(212,168,67,0.07);}
+
+.item-notes{font-size:14px;color:var(--silver);line-height:1.8;margin-bottom:12px;}
+
+/* ── ADD ROW ── */
+.add-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.size-select{background:var(--bg-3);border:1px solid var(--border-blue);border-radius:8px;color:var(--cream);font-family:'Noto Serif TC',serif;font-size:13px;padding:7px 10px;outline:none;cursor:pointer;transition:border-color 0.2s;}
 .size-select:focus{border-color:var(--gold);}
-.add-btn{display:flex;align-items:center;gap:5px;background:transparent;border:0.5px solid var(--gold);border-radius:6px;color:var(--gold);font-family:'Noto Serif TC',serif;font-size:12px;padding:5px 12px;cursor:pointer;transition:background 0.15s;}
-.add-btn:hover{background:rgba(201,168,76,0.12);}
-.added-label{font-size:11px;color:var(--line-green);display:none;}
+.qty-wrap{display:flex;align-items:center;gap:5px;}
+.qty-btn{width:30px;height:30px;background:var(--bg-3);border:1px solid var(--border-blue);border-radius:7px;color:var(--cream);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color 0.15s,background 0.15s;}
+.qty-btn:hover{background:var(--bg-4);border-color:var(--gold);}
+.qty-val{font-size:14px;color:var(--cream);min-width:22px;text-align:center;}
+.add-btn{display:flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--gold-light);border-radius:8px;color:var(--gold-light);font-family:'Noto Serif TC',serif;font-size:13px;padding:7px 14px;cursor:pointer;transition:background 0.15s;}
+.add-btn:hover{background:rgba(212,168,67,0.12);}
+.added-label{font-size:12px;color:var(--line-green);display:none;}
 
-.cart-fab{position:fixed;bottom:1.5rem;right:1.25rem;z-index:200;display:flex;align-items:center;gap:8px;background:var(--gold);color:var(--obsidian);border:none;border-radius:28px;padding:13px 20px;font-size:14px;font-weight:500;font-family:'Noto Serif TC',serif;cursor:pointer;box-shadow:0 4px 20px rgba(201,168,76,0.4);transition:opacity 0.15s,transform 0.1s;}
-.cart-fab:hover{opacity:0.9;}
+/* ── CART FAB ── */
+.cart-fab{position:fixed;bottom:1.75rem;right:1.5rem;z-index:200;display:flex;align-items:center;gap:9px;background:var(--gold);color:var(--bg);border:none;border-radius:32px;padding:14px 22px;font-size:15px;font-weight:500;font-family:'Noto Serif TC',serif;cursor:pointer;box-shadow:0 6px 24px rgba(212,168,67,0.45);transition:opacity 0.15s,transform 0.1s;}
+.cart-fab:hover{opacity:0.92;}
 .cart-fab:active{transform:scale(0.97);}
-.cart-badge{background:var(--danger);color:#fff;border-radius:50%;width:20px;height:20px;font-size:11px;display:flex;align-items:center;justify-content:center;font-weight:500;}
+.cart-badge{background:var(--danger);color:#fff;border-radius:50%;width:22px;height:22px;font-size:12px;display:flex;align-items:center;justify-content:center;font-weight:500;}
 
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;opacity:0;pointer-events:none;transition:opacity 0.25s;}
+/* ── OVERLAY ── */
+.overlay{position:fixed;inset:0;background:rgba(8,14,40,0.88);z-index:300;opacity:0;pointer-events:none;transition:opacity 0.25s;}
 .overlay.show{opacity:1;pointer-events:all;}
 
-.cart-panel{position:fixed;bottom:0;left:0;right:0;max-width:640px;margin:0 auto;background:var(--surface);border-top:0.5px solid var(--border);border-radius:20px 20px 0 0;z-index:400;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);max-height:92vh;overflow-y:auto;}
+/* ── CART PANEL ── */
+.cart-panel{position:fixed;bottom:0;left:0;right:0;max-width:680px;margin:0 auto;background:var(--bg-1);border-top:1px solid var(--border-gold);border-radius:22px 22px 0 0;z-index:400;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);max-height:92vh;overflow-y:auto;}
 .cart-panel.show{transform:translateY(0);}
-.cart-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.25rem 1rem;border-bottom:0.5px solid var(--border-soft);position:sticky;top:0;background:var(--surface);z-index:1;}
-.cart-title{font-size:16px;font-weight:500;color:var(--text-primary);}
-.cart-close{background:none;border:none;color:var(--text-secondary);font-size:22px;cursor:pointer;padding:0 4px;}
-.cart-close:hover{color:var(--text-primary);}
-.cart-items{padding:0.75rem 1.25rem;}
-.cart-item{display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--border-soft);gap:8px;}
+.cart-header{display:flex;align-items:center;justify-content:space-between;padding:1.5rem 1.5rem 1.1rem;border-bottom:1px solid var(--border-soft);position:sticky;top:0;background:var(--bg-1);z-index:1;}
+.cart-title{font-size:17px;font-weight:500;color:var(--cream);letter-spacing:0.05em;}
+.cart-close{background:none;border:none;color:var(--silver-dim);font-size:24px;cursor:pointer;padding:0 4px;line-height:1;}
+.cart-close:hover{color:var(--cream);}
+.cart-items{padding:0.75rem 1.5rem;}
+.cart-item{display:flex;align-items:flex-start;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border-soft);gap:10px;}
 .cart-item-info{flex:1;}
-.cart-item-name{font-size:13px;color:var(--text-primary);line-height:1.4;}
-.cart-item-detail{font-size:11px;color:var(--text-muted);margin-top:3px;}
-.cart-item-subtotal{font-size:12px;color:var(--gold);margin-top:2px;}
-.cart-item-remove{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:0 4px;flex-shrink:0;margin-top:2px;}
+.cart-item-name{font-size:14px;color:var(--cream);line-height:1.5;}
+.cart-item-detail{font-size:12px;color:var(--silver-dim);margin-top:3px;}
+.cart-item-subtotal{font-size:13px;color:var(--gold-light);margin-top:3px;}
+.cart-item-remove{background:none;border:none;color:var(--silver-dark);cursor:pointer;font-size:20px;padding:0 4px;flex-shrink:0;}
 .cart-item-remove:hover{color:var(--danger);}
-.cart-empty{padding:2rem;text-align:center;color:var(--text-muted);font-size:13px;}
+.cart-empty{padding:2.5rem;text-align:center;color:var(--silver-dark);font-size:14px;line-height:1.8;}
 
-.cart-total{padding:12px 1.25rem;border-top:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
-.cart-total-label{font-size:13px;color:var(--text-secondary);}
-.cart-total-amount{font-size:18px;color:var(--gold);font-weight:500;}
+.cart-total{padding:14px 1.5rem;border-top:1px solid var(--border-gold);display:flex;justify-content:space-between;align-items:center;background:var(--bg-2);}
+.cart-total-label{font-size:14px;color:var(--silver);}
+.cart-total-amount{font-size:20px;color:var(--gold);font-weight:500;}
 
-.order-form{padding:1rem 1.25rem 1.5rem;border-top:0.5px solid var(--border);}
-.form-section-title{font-size:13px;color:var(--text-secondary);margin-bottom:1rem;padding-bottom:6px;border-bottom:0.5px solid var(--border-soft);}
-.form-group{margin-bottom:12px;}
-.form-label{font-size:12px;color:var(--text-secondary);display:block;margin-bottom:5px;}
+/* ── ORDER FORM ── */
+.order-form{padding:1.25rem 1.5rem 2rem;border-top:1px solid var(--border-soft);}
+.form-section-title{font-size:14px;color:var(--silver-dim);margin-bottom:1.1rem;padding-bottom:8px;border-bottom:1px solid var(--border-soft);letter-spacing:0.05em;}
+.form-group{margin-bottom:14px;}
+.form-label{font-size:13px;color:var(--silver);display:block;margin-bottom:6px;}
 .form-label span{color:var(--danger);}
-.form-input{width:100%;background:var(--surface2);border:0.5px solid var(--border-soft);border-radius:8px;color:var(--text-primary);font-family:'Noto Serif TC',serif;font-size:14px;padding:10px 12px;outline:none;transition:border-color 0.2s;}
-.form-input:focus{border-color:rgba(201,168,76,0.5);}
-.form-input::placeholder{color:var(--text-muted);}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.submit-btn{width:100%;background:var(--gold);color:var(--obsidian);border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:500;font-family:'Noto Serif TC',serif;cursor:pointer;margin-top:4px;transition:opacity 0.15s;}
+.form-input{width:100%;background:var(--bg-2);border:1px solid var(--border-blue);border-radius:9px;color:var(--cream);font-family:'Noto Serif TC',serif;font-size:15px;padding:11px 14px;outline:none;transition:border-color 0.2s;}
+.form-input:focus{border-color:rgba(212,168,67,0.5);}
+.form-input::placeholder{color:var(--silver-dark);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.submit-btn{width:100%;background:var(--gold);color:var(--bg);border:none;border-radius:11px;padding:15px;font-size:16px;font-weight:500;font-family:'Noto Serif TC',serif;cursor:pointer;margin-top:6px;transition:opacity 0.15s;letter-spacing:0.05em;}
 .submit-btn:hover{opacity:0.88;}
-.submit-btn:disabled{opacity:0.5;cursor:not-allowed;}
-.submit-note{font-size:11px;color:var(--text-muted);text-align:center;margin-top:8px;line-height:1.6;}
+.submit-btn:disabled{opacity:0.45;cursor:not-allowed;}
+.submit-note{font-size:12px;color:var(--silver-dark);text-align:center;margin-top:10px;line-height:1.7;}
 
-.success-panel{padding:2.5rem 1.25rem;text-align:center;}
-.success-icon{font-size:44px;margin-bottom:12px;}
-.success-title{font-size:17px;font-weight:500;color:var(--text-primary);margin-bottom:8px;}
-.success-msg{font-size:13px;color:var(--text-secondary);line-height:1.8;}
-.order-num{font-size:12px;color:var(--gold);margin-top:10px;letter-spacing:0.05em;}
+/* ── SUCCESS ── */
+.success-panel{padding:3rem 1.5rem;text-align:center;}
+.success-icon{font-size:48px;margin-bottom:14px;}
+.success-title{font-size:18px;font-weight:500;color:var(--cream);margin-bottom:10px;}
+.success-msg{font-size:14px;color:var(--silver);line-height:1.8;}
+.order-num{font-size:13px;color:var(--gold);margin-top:12px;letter-spacing:0.08em;}
 
-.footer{padding:2rem 1.25rem;border-top:0.5px solid var(--border);text-align:center;max-width:640px;margin:0 auto;}
-.footer-brand{font-family:'Cinzel',serif;font-size:14px;color:var(--gold);margin-bottom:12px;letter-spacing:0.1em;}
-.footer-links{display:flex;justify-content:center;flex-wrap:wrap;gap:12px 20px;margin-bottom:12px;}
-.footer-links a{font-size:12px;color:var(--text-secondary);text-decoration:none;}
+/* ── FOOTER ── */
+.footer{padding:2.5rem 1.5rem;border-top:1px solid var(--border-gold);text-align:center;max-width:680px;margin:0 auto;}
+.footer-brand{font-family:'Cinzel',serif;font-size:15px;color:var(--gold);margin-bottom:14px;letter-spacing:0.12em;}
+.footer-links{display:flex;justify-content:center;flex-wrap:wrap;gap:12px 22px;margin-bottom:14px;}
+.footer-links a{font-size:13px;color:var(--silver-dim);text-decoration:none;transition:color 0.15s;}
 .footer-links a:hover{color:var(--gold);}
-.footer-meta{font-size:11px;color:var(--text-muted);}
-.no-result{padding:4rem 1.25rem;text-align:center;color:var(--text-muted);font-size:14px;}
+.footer-meta{font-size:12px;color:var(--silver-dark);}
+.no-result{padding:4rem 1.5rem;text-align:center;color:var(--silver-dark);font-size:15px;}
 </style>
 </head>
 <body>
@@ -138,7 +168,7 @@ body{background:var(--obsidian);color:var(--text-primary);font-family:'Noto Seri
         <div class="brand-sub">精品咖啡豆單 · 竹北預約制</div>
       </div>
       <a class="line-btn" href="https://line.me/ti/p/@canmas" target="_blank" rel="noopener">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.92 2 10.72c0 3.1 1.76 5.84 4.44 7.53-.06.22-.4 1.42-.46 1.65-.07.28.1.28.22.2.09-.05 1.44-.95 2.03-1.34.57.08 1.16.12 1.77.12 5.52 0 10-3.92 10-8.72S17.52 2 12 2z"/></svg>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.92 2 10.72c0 3.1 1.76 5.84 4.44 7.53-.06.22-.4 1.42-.46 1.65-.07.28.1.28.22.2.09-.05 1.44-.95 2.03-1.34.57.08 1.16.12 1.77.12 5.52 0 10-3.92 10-8.72S17.52 2 12 2z"/></svg>
         想詢問
       </a>
     </div>
@@ -181,21 +211,17 @@ body{background:var(--obsidian);color:var(--text-primary);font-family:'Noto Seri
 </div>
 
 <script>
-// =============================================
-// 【設定區】貼上您的網址
-// =============================================
-const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR7xuhoS9wYuv5_vzG7TzWsQdUjdA7RkwHQJYycnvynDMU0if90IOJEUyLOH-N8Tht6SvLcuwDFtVID/pub?output=csv";      // Google Sheets CSV 網址
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1HA2LOmb2F7oGXpxDWAQbRBXvBwO9xO5IUzkRCtehw7n_wK2fCX1CttKG32MgUCXb/exec";      // Google Apps Script 部署網址
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR7xuhoS9wYuv5_vzG7TzWsQdUjdA7RkwHQJYycnvynDMU0if90IOJEUyLOH-N8Tht6SvLcuwDFtVID/pub?output=csv";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1HA2LOmb2F7oGXpxDWAQbRBXvBwO9xO5IUzkRCtehw7n_wK2fCX1CttKG32MgUCXb/exec";
 
-// =============================================
 const STATIC_DATA = [
   {region:"中美洲",name:"聖海倫娜 Bamboo Hedge Estate Screen",process:"水洗",notes:"花香，春草植物，黃肉李，柑橘",half:"",one:"16800",soldOut:true,presale:true,award:false},
   {region:"中美洲",name:"牙賈加藍山",process:"水洗",notes:"咖啡中的王者，枝果、杏仁果、焦糖、李子，香氣優雅，入喉滑順回甘",half:"",one:"6930",soldOut:true,presale:true,award:false},
-  {region:"中美洲",name:"巴拿馬翡翠莊園紅標藝伎 GEISHA",process:"水洗",notes:"明亮的花朵香、佛手柑、荔枝香氣，漸漸轉化帶玫瑰香，整體花果香感明顯，層次鮮明豐富",half:"6825",one:"",soldOut:true,presale:true,award:true},
+  {region:"中美洲",name:"巴拿馬翡翠莊園紅標藝伎 GEISHA",process:"水洗",notes:"明亮的花朵香、佛手柑、荔枝香氣，漸漸轉化帶玫瑰香，整體花果香感明顯，層次鮮明豐富，杯測總成績達90分以上",half:"6825",one:"",soldOut:true,presale:true,award:true},
   {region:"中美洲",name:"巴拿馬翡翠莊園綠標藝伎 GEISHA",process:"水洗",notes:"香甜撲鼻的檸檬皮、佛手柑、茉莉與水蜜桃香氣，風味優雅細緻",half:"",one:"5510",soldOut:false,presale:true,award:false},
   {region:"中美洲",name:"巴拿馬藍標藝伎 GEISHA",process:"水洗",notes:"甜花香，伯爵柔香，柑橘，杏桃",half:"",one:"2630",soldOut:false,presale:true,award:false},
   {region:"中美洲",name:"瓜地馬拉安提瓜泉拉卡摩那花神",process:"水洗",notes:"奶香、紅莓、榛果、柑橘、黑李",half:"550",one:"1050",soldOut:false,presale:false,award:true},
-  {region:"中美洲",name:"瓜地馬拉薇薇特南果",process:"水洗",notes:"濃郁巧克力風味、西洋梨、蘋果、肉桂的香氣，帶出溫和的火烤雪松木香和焦糖",half:"440",one:"820",soldOut:false,presale:false,award:false},
+  {region:"中美洲",name:"瓜地馬拉薇薇特南果",process:"水洗",notes:"濃郁巧克力風味、西洋梨、蘋果、肉桂的香氣，帶出溫和的火烤雪松木香和焦糖，層次豐富",half:"440",one:"820",soldOut:false,presale:false,award:false},
   {region:"南美洲",name:"哥倫比亞梅德琪",process:"水洗",notes:"榛果、可可、香草植物、微花香、柑橘",half:"440",one:"840",soldOut:false,presale:false,award:true},
   {region:"南美洲",name:"巴西喜拉朵日曬",process:"日曬",notes:"胡桃、核果、杏仁、花生糖、蔗糖",half:"380",one:"690",soldOut:false,presale:false,award:false},
   {region:"南美洲",name:"巴西摩吉安娜瑪瓏聖塔利亞莊園",process:"日曬",notes:"乾香帶榛果、焦糖、牛奶巧克力，厚實飽滿、甜度佳、尾韻綿長",half:"380",one:"690",soldOut:false,presale:false,award:false},
@@ -208,9 +234,9 @@ const STATIC_DATA = [
   {region:"非洲",name:"衣索比亞 耶加雪菲 喬昂萊 水洗",process:"水洗",notes:"白柚、白花、黃檸檬",half:"550",one:"1080",soldOut:false,presale:false,award:false},
   {region:"非洲",name:"衣索比亞 耶加雪菲 紅蜜",process:"水洗",notes:"佛手柑、檸檬、雞蛋花",half:"550",one:"1080",soldOut:false,presale:false,award:false},
   {region:"非洲",name:"衣索比亞利姆獅王花蜜藝妓",process:"水洗",notes:"獨特的花蜜香氣，精緻的柑橘、白花香與紅槿甜感",half:"750",one:"1450",soldOut:false,presale:false,award:false},
-  {region:"太平洋",name:"夏威夷阿里安娜可娜 KONA",process:"水洗",notes:"香草植物、蔗糖、微花香；美國白宮專用，極致香氣油脂醇厚。2007、2011年贏得夏威夷全洲可娜節發春第一名",half:"",one:"5560",soldOut:false,presale:true,award:true},
+  {region:"太平洋",name:"夏威夷阿里安娜可娜 KONA",process:"水洗",notes:"香草植物、蔗糖、微花香；美國白宮客客專用，極致香氣油脂醇厚。2007、2011年贏得夏威夷全洲可娜節發春第一名",half:"",one:"5560",soldOut:false,presale:true,award:true},
   {region:"太平洋",name:"夏威夷可娜圓豆",process:"水洗",notes:"堅果香甜與木果的熟香、奶油般滑順口感，明亮的酸味帶出回甘及水果的香甜",half:"1330",one:"2630",soldOut:true,presale:false,award:true},
-  {region:"亞洲",name:"印尼黃金曼特寧",process:"水洗",notes:"黑巧克力、堅果、雪松、焦糖、奶油、甜藥草、甜感圓潤，風味濃厚紮實",half:"520",one:"1000",soldOut:false,presale:false,award:false},
+  {region:"亞產區",name:"印尼黃金曼特寧",process:"水洗",notes:"黑巧克力、堅果、雪松、焦糖、奶油、甜藥草、甜感圓潤，風味濃厚紮實",half:"520",one:"1000",soldOut:false,presale:false,award:false},
   {region:"職人精選",name:"肯馬仕義式特調",process:"水洗",notes:"肯馬仕精選莊園豆，做拿鐵可保有濃厚的咖啡香",half:"440",one:"840",soldOut:false,presale:false,award:false},
   {region:"職人精選",name:"肯馬仕黃金曼巴",process:"水洗",notes:"精準深度烘焙，香濃甘醇、快速回甘、層次分明",half:"440",one:"840",soldOut:false,presale:false,award:false},
   {region:"職人精選",name:"花漾清晨（Floral Morning）",process:"水洗",notes:"花香馥郁、柑橘清新，濃郁的茉莉花香與柑橘酸甜交織，餘韻溫柔悠長",half:"440",one:"840",soldOut:false,presale:false,award:true},
@@ -226,7 +252,7 @@ const STATIC_DATA = [
   {region:"精選濾掛",name:"哥倫比亞梅德琪（10入）",process:"水洗",notes:"榛果、可可、香草植物、微花香、柑橘",half:"",one:"420",soldOut:false,presale:false,award:false},
 ];
 
-const REGIONS=["全部","中美洲","南美洲","非洲","太平洋","亞洲","職人精選","精選濾掛"];
+const REGIONS=["全部","中美洲","南美洲","非洲","太平洋","亞產區","職人精選","精選濾掛"];
 let activeRegion="全部",allData=[],cart=[];
 
 function parsePrice(raw){
@@ -238,7 +264,7 @@ function parsePrice(raw){
 }
 
 function buildPriceHTML(d){
-  if(d.soldOut)return`<span style="font-size:13px;color:var(--text-muted)">售完</span>`;
+  if(d.soldOut)return`<span style="font-size:14px;color:var(--silver-dark)">售完</span>`;
   if(d.half&&d.one)return`<div class="price-block"><div class="price-row"><span class="price-label">半磅</span><span class="price-value">$${d.half}</span></div><div class="price-row"><span class="price-label">一磅</span><span class="price-value">$${d.one}</span></div></div>`;
   if(d.one)return`<div class="price-block"><div class="price-row"><span class="price-value">$${d.one}</span></div></div>`;
   if(d.half)return`<div class="price-block"><div class="price-row"><span class="price-label">半磅</span><span class="price-value">$${d.half}</span></div></div>`;
@@ -252,14 +278,9 @@ function buildSizeOptions(d){
   return o.join("");
 }
 
-// 數量控制
 const qtyMap={};
 function getQty(idx){return qtyMap[idx]||1;}
-function setQty(idx,v){
-  qtyMap[idx]=Math.max(1,v);
-  const el=document.getElementById(`qty-${idx}`);
-  if(el)el.textContent=qtyMap[idx];
-}
+function setQty(idx,v){qtyMap[idx]=Math.max(1,v);const el=document.getElementById(`qty-${idx}`);if(el)el.textContent=qtyMap[idx];}
 
 function render(){
   const q=document.getElementById("search").value.trim().toLowerCase();
@@ -291,7 +312,7 @@ function render(){
           <button class="qty-btn" onclick="setQty(${idx},getQty(${idx})+1)">+</button>
         </div>
         <button class="add-btn" onclick="addToCart(${idx})">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
           加入購物清單
         </button>
         <span class="added-label" id="added-${idx}">✓ 已加入</span>
@@ -305,17 +326,14 @@ function addToCart(idx){
   const sel=document.getElementById(`size-${idx}`);
   const[size,price]=sel.value.split("|");
   const qty=getQty(idx);
-  // 同款同規格累加
   const exist=cart.find(c=>c.name===d.name&&c.size===size);
-  if(exist){exist.qty+=qty;}
-  else{cart.push({name:d.name,size,price:Number(price),qty});}
+  if(exist){exist.qty+=qty;}else{cart.push({name:d.name,size,price:Number(price),qty});}
   updateCartBadge();
   const lbl=document.getElementById(`added-${idx}`);
   if(lbl){lbl.style.display="inline";setTimeout(()=>lbl.style.display="none",1500);}
 }
 
 function removeFromCart(i){cart.splice(i,1);updateCartBadge();renderCartBody();}
-
 function cartTotal(){return cart.reduce((s,c)=>s+c.price*c.qty,0);}
 
 function updateCartBadge(){
@@ -330,7 +348,7 @@ function closeCart(){document.getElementById("overlay").classList.remove("show")
 
 function renderCartBody(){
   const el=document.getElementById("cartBody");
-  if(!cart.length){el.innerHTML=`<div class="cart-empty">購物清單是空的<br><span style="font-size:11px;color:var(--text-muted);margin-top:6px;display:block">點選豆款旁的「加入購物清單」開始選購</span></div>`;return;}
+  if(!cart.length){el.innerHTML=`<div class="cart-empty">購物清單是空的<br><span style="font-size:12px">點選豆款旁的「加入購物清單」開始選購</span></div>`;return;}
   const total=cartTotal();
   el.innerHTML=`
     <div class="cart-items">${cart.map((c,i)=>`
@@ -375,40 +393,46 @@ async function submitOrder(){
   if(!name||!phone||!addr){alert("請填寫姓名、電話及寄送地址");return;}
 
   const btn=document.querySelector(".submit-btn");
-  btn.disabled=true;btn.textContent="送出中…";
+  btn.disabled=true;btn.textContent="處理中…";
 
   const orderNo=genOrderNo();
   const ts=new Date().toLocaleString("zh-TW",{timeZone:"Asia/Taipei"});
   const itemsText=cart.map(c=>`${c.name}（${c.size}×${c.qty}）`).join("、");
   const total=cartTotal();
 
-  // 寫入 Google Sheets via Apps Script
+  let paymentURL="";
+
   if(APPS_SCRIPT_URL){
     try{
-      await fetch(APPS_SCRIPT_URL,{
-        method:"POST",mode:"no-cors",
+      // 使用 cors proxy 取得付款連結
+      const res=await fetch("https://api.codetabs.com/v1/proxy?quest="+
+        encodeURIComponent(APPS_SCRIPT_URL),{
+        method:"POST",
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({orderNo,timestamp:ts,name,phone,email,address:addr,items:itemsText,total,note,status:"待確認"})
+        body:JSON.stringify({orderNo,timestamp:ts,name,phone,email,address:addr,items:itemsText,total,note,status:"待付款"})
       });
-    }catch(e){console.warn("Sheets寫入失敗",e);}
+      const json=await res.json();
+      if(json.paymentURL) paymentURL=json.paymentURL;
+    }catch(e){
+      console.warn("Apps Script呼叫失敗，改用LINE通知",e);
+    }
   }
 
-  // LINE 訊息
-  const lineMsg=`【肯馬仕 新訂單 ${orderNo}】\n姓名：${name}\n電話：${phone}\n地址：${addr}\n品項：${itemsText}\n合計：$${total.toLocaleString()}${note?"\n備註："+note:""}\n時間：${ts}`;
-  const lineURL=`https://line.me/ti/p/@canmas?text=${encodeURIComponent(lineMsg)}`;
-
-  const savedCart=[...cart];
   cart=[];updateCartBadge();
+
+  // 成功畫面
+  const payBtn=paymentURL
+    ?`<a href="${paymentURL}" target="_blank" style="display:inline-block;margin-top:16px;background:#D4A843;color:#111E4A;border:none;border-radius:10px;padding:13px 28px;font-size:15px;font-weight:500;text-decoration:none;font-family:'Noto Serif TC',serif;cursor:pointer;">立即前往付款 →</a>`
+    :`<div style="font-size:12px;color:#6878A8;margin-top:12px">付款連結將透過 LINE 傳送給您</div>`;
 
   document.getElementById("cartBody").innerHTML=`
     <div class="success-panel">
       <div class="success-icon">✓</div>
-      <div class="success-title">訂單已送出！</div>
-      <div class="success-msg">即將開啟 LINE 與您確認付款方式<br>我們將盡快安排出貨</div>
+      <div class="success-title">訂單已建立！</div>
+      <div class="success-msg">請點下方按鈕前往綠界付款<br>付款完成後我們將盡快安排出貨</div>
       <div class="order-num">訂單編號：${orderNo}</div>
+      ${payBtn}
     </div>`;
-
-  setTimeout(()=>{window.open(lineURL,"_blank");closeCart();},1800);
 }
 
 function setTab(r){activeRegion=r;document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.r===r));render();}
