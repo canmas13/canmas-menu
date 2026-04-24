@@ -9,13 +9,14 @@
 
 // ── 設定區 ──────────────────────────────────
 const SPREADSHEET_ID  = "1WTt3GZ7WDMXpeFh-j1btJB28z8aHwRobE4GaJuEr_XY";
-const LINE_NOTIFY_TOKEN = "";        // 填入您的 LINE Notify Token
+const LINE_NOTIFY_TOKEN = "const LINE_NOTIFY_TOKEN = "WIUaYt/xGyngnzUy+81LpYyxml0owSZhr30oMvsZNyG2sDpQLi/nMyfuFYW+GMpZMhaaq+9bzywcxJ8ZFcbLmNI4X7ZJyle7ldIOg0Bhl8J3tovmTiLFb+Gz9x382XQBPNzVuyTVy6dAmgf91upVSAdB04t89/1O/w1cDnyilFU=";  // 填入您的 LINE Notify Token
+";        // 填入您的 LINE Notify Token
 const NOTIFY_EMAIL      = "canmas13@gmail.com";
 
 // 綠界設定
 const ECPAY_MERCHANT_ID = "3419991";
-const ECPAY_HASH_KEY    = "NcedddddddddUTdl0";
-const ECPAY_HASH_IV     = "g92Gx6DQ";
+const ECPAY_HASH_KEY    = "Ncehlnu02QkUTdl0";
+const ECPAY_HASH_IV     = "g92Gx6DQVKCJPmSv";
 
 // 正式環境 → true；測試環境 → false
 const ECPAY_PRODUCTION  = false;
@@ -48,12 +49,75 @@ function doPost(e) {
   }
 }
 
-// doGet：讓綠界 ReturnURL 也能接收（有些版本用 GET）
+// =============================================
+// doGet：豆單資料 / 付款頁面 / 綠界回呼
+// =============================================
 function doGet(e) {
-  if (e.parameter && e.parameter.MerchantTradeNo) {
-    return handleEcpayCallback(e.parameter);
+  const p = (e && e.parameter) ? e.parameter : {};
+
+  // 1. 前端請求豆單資料
+  if (p.action === "menu") {
+    return serveMenuData();
   }
+
+  // 2. 付款頁面
+  if (p.pay) {
+    return servePaymentPage(decodeURIComponent(p.pay));
+  }
+
+  // 3. 綠界回呼（GET）
+  if (p.MerchantTradeNo) {
+    return handleEcpayCallback(p);
+  }
+
   return ContentService.createTextOutput("CANMAS Payment Service");
+}
+
+// ── 回傳豆單 JSON（從 canmas_coffee_beans 工作表）──
+function serveMenuData() {
+  try {
+    const ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = ss.getSheetByName("canmas_coffee_beans");
+    if (!sheet) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ status: "error", message: "找不到豆單工作表" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    const rows    = sheet.getDataRange().getValues();
+    const headers = rows[0].map(h => h.toString().trim());
+    const data    = rows.slice(1)
+      .filter(r => r[headers.indexOf("name")] !== "")
+      .map(r => {
+        const obj = {};
+        headers.forEach((h, i) => { obj[h] = r[i] !== undefined ? r[i].toString().trim() : ""; });
+        ["soldOut","presale","award"].forEach(k => {
+          obj[k] = (obj[k] || "").toUpperCase() === "TRUE";
+        });
+        return obj;
+      });
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: "ok", data: data }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: "error", message: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// ── 輸出付款 HTML 頁面 ──
+function servePaymentPage(orderNo) {
+  const ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName("付款頁面暫存");
+  if (sheet) {
+    const data = sheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0] === orderNo) {
+        return HtmlService.createHtmlOutput(data[i][1]);
+      }
+    }
+  }
+  return HtmlService.createHtmlOutput("<h2 style=\'font-family:sans-serif;padding:2rem;\'>付款連結已失效，請重新下單</h2>");
 }
 
 // =============================================
@@ -210,31 +274,7 @@ function createPaymentPage(orderNo, html) {
   return scriptURL + "?pay=" + encodeURIComponent(orderNo);
 }
 
-// doGet 加強：輸出付款頁面
-function doGetFull(e) {
-  // 付款頁面請求
-  if (e.parameter && e.parameter.pay) {
-    const orderNo = decodeURIComponent(e.parameter.pay);
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-    const sheet = ss.getSheetByName("付款頁面暫存");
-    if (sheet) {
-      const data = sheet.getDataRange().getValues();
-      for (let i = 1; i < data.length; i++) {
-        if (data[i][0] === orderNo) {
-          return HtmlService.createHtmlOutput(data[i][1]);
-        }
-      }
-    }
-    return HtmlService.createHtmlOutput("<h2>付款連結已失效，請重新下單</h2>");
-  }
 
-  // 綠界回呼（GET）
-  if (e.parameter && e.parameter.MerchantTradeNo) {
-    return handleEcpayCallback(e.parameter);
-  }
-
-  return ContentService.createTextOutput("CANMAS Payment Service");
-}
 
 // =============================================
 // 處理綠界付款回呼
