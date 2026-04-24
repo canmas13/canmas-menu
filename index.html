@@ -212,7 +212,7 @@ body{background:var(--bg);color:var(--cream);font-family:'Noto Serif TC',serif;m
 
 <script>
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR7xuhoS9wYuv5_vzG7TzWsQdUjdA7RkwHQJYycnvynDMU0if90IOJEUyLOH-N8Tht6SvLcuwDFtVID/pub?output=csv";
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzj4vSrOKObnKTpGeKx9PujMq8Dr6rBrtBQ-FcdWSolHYhpskEGJ96ggWxjPZm67V1QTQ/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1HA2LOmb2F7oGXpxDWAQbRBXvBwO9xO5IUzkRCtehw7n_wK2fCX1CttKG32MgUCXb/exec";
 
 const STATIC_DATA = [
   {region:"中美洲",name:"聖海倫娜 Bamboo Hedge Estate Screen",process:"水洗",notes:"花香，春草植物，黃肉李，柑橘",half:"",one:"16800",soldOut:true,presale:true,award:false},
@@ -371,7 +371,7 @@ function renderCartBody(){
         <div class="form-group"><label class="form-label">姓名 <span>*</span></label><input class="form-input" id="f-name" type="text" placeholder="您的姓名"></div>
         <div class="form-group"><label class="form-label">聯絡電話 <span>*</span></label><input class="form-input" id="f-phone" type="tel" placeholder="09xx-xxx-xxx"></div>
       </div>
-      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="f-email" type="email" placeholder="your@email.com（選填）"></div>
+      <div class="form-group"><label class="form-label">Email <span>*</span></label><input class="form-input" id="f-email" type="email" placeholder="your@email.com"></div>
       <div class="form-group"><label class="form-label">寄送地址 <span>*</span></label><input class="form-input" id="f-addr" type="text" placeholder="縣市、鄉鎮市區、路段門號"></div>
       <div class="form-group"><label class="form-label">備註</label><input class="form-input" id="f-note" type="text" placeholder="烘焙度偏好、包裝需求…"></div>
       <button class="submit-btn" onclick="submitOrder()">確認送出訂單</button>
@@ -390,7 +390,7 @@ async function submitOrder(){
   const email=document.getElementById("f-email").value.trim();
   const addr=document.getElementById("f-addr").value.trim();
   const note=document.getElementById("f-note").value.trim();
-  if(!name||!phone||!addr){alert("請填寫姓名、電話及寄送地址");return;}
+  if(!name||!phone||!email||!addr){alert("請填寫姓名、電話、Email 及寄送地址");return;}
 
   const btn=document.querySelector(".submit-btn");
   btn.disabled=true;btn.textContent="處理中…";
@@ -466,10 +466,24 @@ function parseCSV(text){
 
 async function init(){
   buildTabs();
-  if(SHEET_CSV_URL){
-    try{const res=await fetch("https://api.codetabs.com/v1/proxy?quest="+encodeURIComponent(SHEET_CSV_URL));allData=parseCSV(await res.text());}
-    catch(e){console.warn("使用靜態資料",e);allData=STATIC_DATA;}
-  }else{allData=STATIC_DATA;}
+  // 從 Apps Script 直接取得豆單，無需 proxy
+  if(APPS_SCRIPT_URL){
+    try{
+      const res=await fetch(APPS_SCRIPT_URL+"?action=menu");
+      const json=await res.json();
+      if(json.status==="ok"&&json.data&&json.data.length>0){
+        allData=json.data;
+      }else{
+        console.warn("Apps Script豆單異常，使用靜態資料");
+        allData=STATIC_DATA;
+      }
+    }catch(e){
+      console.warn("使用靜態資料",e);
+      allData=STATIC_DATA;
+    }
+  }else{
+    allData=STATIC_DATA;
+  }
   render();
 }
 init();
