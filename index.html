@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>canmas coffee — 精品豆單</title>
-<meta name="description" content="肯馬仕精品咖啡 CANMAS Coffee，竹北預約制bistro，精選世界莊園咖啡豆">
+<meta name="description" content="肯馬仕精品咖啡 CANMAS Coffee，竹北預約制精品咖啡bistro，精選世界各地莊園咖啡豆">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Noto+Serif+TC:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -211,8 +211,8 @@ body{background:var(--bg);color:var(--cream);font-family:'Noto Serif TC',serif;m
 </div>
 
 <script>
-const SHEET_CSV_URL = "";
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwu-aSEh1fEosbLeUX5O5-cqB1-bqzUEk0f-jz3futrxClWArsnRy1p8WaxVUBCVoQxeg/exec";
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR7xuhoS9wYuv5_vzG7TzWsQdUjdA7RkwHQJYycnvynDMU0if90IOJEUyLOH-N8Tht6SvLcuwDFtVID/pub?output=csv";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1HA2LOmb2F7oGXpxDWAQbRBXvBwO9xO5IUzkRCtehw7n_wK2fCX1CttKG32MgUCXb/exec";
 
 const STATIC_DATA = [
   {region:"中美洲",name:"聖海倫娜 Bamboo Hedge Estate Screen",process:"水洗",notes:"花香，春草植物，黃肉李，柑橘",half:"",one:"16800",soldOut:true,presale:true,award:false},
@@ -236,7 +236,7 @@ const STATIC_DATA = [
   {region:"非洲",name:"衣索比亞利姆獅王花蜜藝妓",process:"水洗",notes:"獨特的花蜜香氣，精緻的柑橘、白花香與紅槿甜感",half:"750",one:"1450",soldOut:false,presale:false,award:false},
   {region:"太平洋",name:"夏威夷阿里安娜可娜 KONA",process:"水洗",notes:"香草植物、蔗糖、微花香；美國白宮客客專用，極致香氣油脂醇厚。2007、2011年贏得夏威夷全洲可娜節發春第一名",half:"",one:"5560",soldOut:false,presale:true,award:true},
   {region:"太平洋",name:"夏威夷可娜圓豆",process:"水洗",notes:"堅果香甜與木果的熟香、奶油般滑順口感，明亮的酸味帶出回甘及水果的香甜",half:"1330",one:"2630",soldOut:true,presale:false,award:true},
-  {region:"亞洲",name:"印尼黃金曼特寧",process:"水洗",notes:"黑巧克力、堅果、雪松、焦糖、奶油、甜藥草、甜感圓潤，風味濃厚紮實",half:"520",one:"1000",soldOut:false,presale:false,award:false},
+  {region:"亞產區",name:"印尼黃金曼特寧",process:"水洗",notes:"黑巧克力、堅果、雪松、焦糖、奶油、甜藥草、甜感圓潤，風味濃厚紮實",half:"520",one:"1000",soldOut:false,presale:false,award:false},
   {region:"職人精選",name:"肯馬仕義式特調",process:"水洗",notes:"肯馬仕精選莊園豆，做拿鐵可保有濃厚的咖啡香",half:"440",one:"840",soldOut:false,presale:false,award:false},
   {region:"職人精選",name:"肯馬仕黃金曼巴",process:"水洗",notes:"精準深度烘焙，香濃甘醇、快速回甘、層次分明",half:"440",one:"840",soldOut:false,presale:false,award:false},
   {region:"職人精選",name:"花漾清晨（Floral Morning）",process:"水洗",notes:"花香馥郁、柑橘清新，濃郁的茉莉花香與柑橘酸甜交織，餘韻溫柔悠長",half:"440",one:"840",soldOut:false,presale:false,award:true},
@@ -252,7 +252,7 @@ const STATIC_DATA = [
   {region:"精選濾掛",name:"哥倫比亞梅德琪（10入）",process:"水洗",notes:"榛果、可可、香草植物、微花香、柑橘",half:"",one:"420",soldOut:false,presale:false,award:false},
 ];
 
-const REGIONS=["全部","中美洲","南美洲","非洲","太平洋","亞洲區","職人精選","精選濾掛"];
+const REGIONS=["全部","中美洲","南美洲","非洲","太平洋","亞產區","職人精選","精選濾掛"];
 let activeRegion="全部",allData=[],cart=[];
 
 function parsePrice(raw){
@@ -466,19 +466,22 @@ function parseCSV(text){
 
 async function init(){
   buildTabs();
-  // 從 Apps Script 直接取得豆單，無需 proxy
-  if(APPS_SCRIPT_URL){
+  // 豆單從 Google Sheets CSV 讀取，透過自建 Cloudflare Worker proxy
+  const CF_PROXY = "https://canmas-proxy.unikch.workers.dev/?url=";
+  if(SHEET_CSV_URL){
     try{
-      const res=await fetch(APPS_SCRIPT_URL+"?action=menu");
-      const json=await res.json();
-      if(json.status==="ok"&&json.data&&json.data.length>0){
-        allData=json.data;
+      const res=await fetch(CF_PROXY+encodeURIComponent(SHEET_CSV_URL));
+      if(!res.ok) throw new Error("HTTP "+res.status);
+      const text=await res.text();
+      const parsed=parseCSV(text);
+      if(parsed.length>0){
+        allData=parsed;
+        console.log("豆單載入成功，共"+allData.length+"款");
       }else{
-        console.warn("Apps Script豆單異常，使用靜態資料");
-        allData=STATIC_DATA;
+        throw new Error("資料為空");
       }
     }catch(e){
-      console.warn("使用靜態資料",e);
+      console.warn("Cloudflare proxy失敗，使用靜態資料：",e.message);
       allData=STATIC_DATA;
     }
   }else{
