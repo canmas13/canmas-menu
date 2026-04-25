@@ -213,6 +213,7 @@ body{background:var(--bg);color:var(--cream);font-family:'Noto Serif TC',serif;m
 <script>
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR7xuhoS9wYuv5_vzG7TzWsQdUjdA7RkwHQJYycnvynDMU0if90IOJEUyLOH-N8Tht6SvLcuwDFtVID/pub?output=csv";
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1HA2LOmb2F7oGXpxDWAQbRBXvBwO9xO5IUzkRCtehw7n_wK2fCX1CttKG32MgUCXb/exec";
+const ORDER_API_URL = "/.netlify/functions/order"; // Netlify Function
 
 const STATIC_DATA = [
   {region:"中美洲",name:"聖海倫娜 Bamboo Hedge Estate Screen",process:"水洗",notes:"花香，春草植物，黃肉李，柑橘",half:"",one:"16800",soldOut:true,presale:true,award:false},
@@ -400,39 +401,74 @@ async function submitOrder(){
   const itemsText=cart.map(c=>`${c.name}（${c.size}×${c.qty}）`).join("、");
   const total=cartTotal();
 
-  let paymentURL="";
+  // 呼叫 Netlify Function 建立訂單並取得綠界付款參數
+  let ecpayParams = null;
+  let ecpayAction = "";
 
-  if(APPS_SCRIPT_URL){
-    try{
-      // 使用 cors proxy 取得付款連結
-      const res=await fetch("https://api.codetabs.com/v1/proxy?quest="+
-        encodeURIComponent(APPS_SCRIPT_URL),{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({orderNo,timestamp:ts,name,phone,email,address:addr,items:itemsText,total,note,status:"待付款"})
-      });
-      const json=await res.json();
-      if(json.paymentURL) paymentURL=json.paymentURL;
-    }catch(e){
-      console.warn("Apps Script呼叫失敗，改用LINE通知",e);
+  try{
+    const res = await fetch(ORDER_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({orderNo,timestamp:ts,name,phone,email,
+        address:addr,items:itemsText,total,note,status:"待付款"})
+    });
+    const json = await res.json();
+    if(json.status === "ok"){
+      ecpayParams = json.ecpayParams;
+      ecpayAction = json.ecpayAction;
     }
+  }catch(e){
+    console.warn("Netlify Function呼叫失敗：",e);
   }
 
   cart=[];updateCartBadge();
 
-  // 成功畫面
-  const payBtn=paymentURL
-    ?`<a href="${paymentURL}" target="_blank" style="display:inline-block;margin-top:16px;background:#D4A843;color:#111E4A;border:none;border-radius:10px;padding:13px 28px;font-size:15px;font-weight:500;text-decoration:none;font-family:'Noto Serif TC',serif;cursor:pointer;">立即前往付款 →</a>`
-    :`<div style="font-size:12px;color:#6878A8;margin-top:12px">付款連結將透過 LINE 傳送給您</div>`;
+  // 如果取得綠界參數，建立隱藏表單直接提交
+  if(ecpayParams && ecpayAction){
+    document.getElementById("cartBody").innerHTML=`
+      <div class="success-panel">
+        <div class="success-icon">✓</div>
+        <div class="success-title">訂單已建立！</div>
+        <div class="success-msg">點下方按鈕前往付款<br>付款完成後我們將盡快安排出貨</div>
+        <div class="order-num">訂單編號：${orderNo}</div>
+        <button onclick="submitToEcpay()" style="display:inline-block;margin-top:20px;background:#D4A843;color:#111E4A;border:none;border-radius:10px;padding:14px 32px;font-size:16px;font-weight:500;font-family:'Noto Serif TC',serif;cursor:pointer;width:100%;">前往綠界付款 →</button>
+      </div>`;
 
-  document.getElementById("cartBody").innerHTML=`
-    <div class="success-panel">
-      <div class="success-icon">✓</div>
-      <div class="success-title">訂單已建立！</div>
-      <div class="success-msg">請點下方按鈕前往綠界付款<br>付款完成後我們將盡快安排出貨</div>
-      <div class="order-num">訂單編號：${orderNo}</div>
-      ${payBtn}
-    </div>`;
+    // 預先建立隱藏的綠界表單
+    const form = document.createElement("form");
+    form.id = "ecpay-form";
+    form.action = ecpayAction;
+    form.method = "POST";
+    form.style.display = "none";
+    Object.keys(ecpayParams).forEach(k => {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = k;
+      input.value = ecpayParams[k];
+      form.appendChild(input);
+    });
+    document.body.appendChild(form);
+  } else {
+    // 備用：LINE 通知
+    const lineMsg=`【肯馬仕訂單】${orderNo}
+品項：${itemsText}
+合計：$${total.toLocaleString()}
+時間：${ts}`;
+    const lineURL=`https://line.me/ti/p/@canmas?text=${encodeURIComponent(lineMsg)}`;
+    document.getElementById("cartBody").innerHTML=`
+      <div class="success-panel">
+        <div class="success-icon">✓</div>
+        <div class="success-title">訂單已建立！</div>
+        <div class="success-msg">付款連結將透過 LINE 傳送給您<br>我們將盡快安排出貨</div>
+        <div class="order-num">訂單編號：${orderNo}</div>
+      </div>`;
+    setTimeout(()=>{ window.open(lineURL,"_blank"); closeCart(); }, 1800);
+  }
+}
+
+function submitToEcpay(){
+  const form=document.getElementById("ecpay-form");
+  if(form) form.submit();
 }
 
 function setTab(r){activeRegion=r;document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.r===r));render();}
