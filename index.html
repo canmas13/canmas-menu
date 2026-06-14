@@ -309,7 +309,7 @@ function render(){
         <select class="size-select" id="size-${idx}">${buildSizeOptions(d)}</select>
         <div class="qty-wrap">
           <button class="qty-btn" onclick="setQty(${idx},getQty(${idx})-1)">−</button>
-          <span class="qty-val" id="qty-${idx}">1</span>
+          <span class="qty-val" id="qty-${idx}">${getQty(idx)}</span>
           <button class="qty-btn" onclick="setQty(${idx},getQty(${idx})+1)">+</button>
         </div>
         <button class="add-btn" onclick="addToCart(${idx})">
