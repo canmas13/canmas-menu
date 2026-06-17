@@ -23,7 +23,6 @@
   --silver:      #B8C8E8;
   --silver-dim:  #6878A8;
   --silver-dark: #364070;
-  --line-green:  #06C755;
   --danger:      #E05555;
   --border-gold: rgba(212,168,67,0.28);
   --border-blue: rgba(184,200,232,0.12);
@@ -39,9 +38,9 @@ body{background:var(--bg);color:var(--cream);font-family:'Noto Serif TC',serif;m
 .header-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;}
 .brand-name{font-family:'Cinzel',serif;font-size:26px;font-weight:500;letter-spacing:0.1em;color:var(--gold);}
 .brand-sub{font-size:13px;color:var(--silver-dim);letter-spacing:0.15em;margin-top:4px;}
-.line-btn{display:flex;align-items:center;gap:7px;background:var(--line-green);color:#fff;border:none;border-radius:28px;padding:10px 18px;font-size:14px;font-weight:500;font-family:'Noto Serif TC',serif;cursor:pointer;text-decoration:none;white-space:nowrap;flex-shrink:0;transition:opacity 0.15s,transform 0.1s;}
-.line-btn:hover{opacity:0.88;}
-.line-btn:active{transform:scale(0.97);}
+.mail-btn{display:flex;align-items:center;gap:7px;background:var(--silver-dark);color:var(--cream);border:1px solid var(--border-blue);border-radius:28px;padding:10px 18px;font-size:14px;font-weight:500;font-family:'Noto Serif TC',serif;cursor:pointer;text-decoration:none;white-space:nowrap;flex-shrink:0;transition:opacity 0.15s,transform 0.1s;}
+.mail-btn:hover{opacity:0.88;border-color:var(--gold-light);}
+.mail-btn:active{transform:scale(0.97);}
 .search-wrap{position:relative;}
 .search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:0.4;pointer-events:none;}
 .search-input{width:100%;background:var(--bg-3);border:1px solid var(--border-blue);border-radius:10px;color:var(--cream);font-family:'Noto Serif TC',serif;font-size:15px;padding:11px 14px 11px 38px;outline:none;transition:border-color 0.2s;}
@@ -93,7 +92,7 @@ body{background:var(--bg);color:var(--cream);font-family:'Noto Serif TC',serif;m
 .qty-val{font-size:14px;color:var(--cream);min-width:22px;text-align:center;}
 .add-btn{display:flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--gold-light);border-radius:8px;color:var(--gold-light);font-family:'Noto Serif TC',serif;font-size:13px;padding:7px 14px;cursor:pointer;transition:background 0.15s;}
 .add-btn:hover{background:rgba(212,168,67,0.12);}
-.added-label{font-size:12px;color:var(--line-green);display:none;}
+.added-label{font-size:12px;color:#85c785;display:none;}
 
 /* ── CART FAB ── */
 .cart-fab{position:fixed;bottom:1.75rem;right:1.5rem;z-index:200;display:flex;align-items:center;gap:9px;background:var(--gold);color:var(--bg);border:none;border-radius:32px;padding:14px 22px;font-size:15px;font-weight:500;font-family:'Noto Serif TC',serif;cursor:pointer;box-shadow:0 6px 24px rgba(212,168,67,0.45);transition:opacity 0.15s,transform 0.1s;}
@@ -167,9 +166,9 @@ body{background:var(--bg);color:var(--cream);font-family:'Noto Serif TC',serif;m
         <div class="brand-name">canmas coffee</div>
         <div class="brand-sub">精品咖啡豆單 · 竹北預約制</div>
       </div>
-      <a class="line-btn" href="https://line.me/ti/p/@canmas" target="_blank" rel="noopener">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.92 2 10.72c0 3.1 1.76 5.84 4.44 7.53-.06.22-.4 1.42-.46 1.65-.07.28.1.28.22.2.09-.05 1.44-.95 2.03-1.34.57.08 1.16.12 1.77.12 5.52 0 10-3.92 10-8.72S17.52 2 12 2z"/></svg>
-        想詢問
+      <a class="mail-btn" href="mailto:canmas13@gmail.com" target="_blank" rel="noopener">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+        聯絡我們
       </a>
     </div>
     <div class="search-wrap">
@@ -186,10 +185,9 @@ body{background:var(--bg);color:var(--cream);font-family:'Noto Serif TC',serif;m
 <div class="footer">
   <div class="footer-brand">CANMAS · 肯馬仕有限公司</div>
   <div class="footer-links">
-    <a href="https://line.me/ti/p/@canmas" target="_blank">LINE @canmas</a>
+    <a href="mailto:canmas13@gmail.com">canmas13@gmail.com</a>
     <a href="tel:03-2605030">03-2605030</a>
     <a href="tel:0935319135">0935-319-135</a>
-    <a href="mailto:canmas13@gmail.com">canmas13@gmail.com</a>
     <a href="https://www.canmas.com.tw" target="_blank">canmas.com.tw</a>
   </div>
   <div class="footer-meta">新竹縣竹北市光明六路東二段36號2樓 · 預約制</div>
@@ -217,7 +215,7 @@ const ORDER_API_URL = "/.netlify/functions/order"; // Netlify Function
 
 const STATIC_DATA = [
   {region:"中美洲",name:"聖海倫娜 Bamboo Hedge Estate Screen",process:"水洗",notes:"花香，春草植物，黃肉李，柑橘",half:"",one:"16800",soldOut:true,presale:true,award:false},
-  {region:"中美洲",name:"牙賈加藍山",process:"水洗",notes:"咖啡中的王者，枝果、杏仁果、焦糖、李子，香氣優雅，入喉滑順回甘",half:"",one:"6930",soldOut:true,presale:true,award:false},
+  {region:"中美洲",name:"牙買加藍山",process:"水洗",notes:"咖啡中的王者，枝果、杏仁果、焦糖、李子，香氣優雅，入喉滑順回甘",half:"",one:"6930",soldOut:true,presale:true,award:false},
   {region:"中美洲",name:"巴拿馬翡翠莊園紅標藝伎 GEISHA",process:"水洗",notes:"明亮的花朵香、佛手柑、荔枝香氣，漸漸轉化帶玫瑰香，整體花果香感明顯，層次鮮明豐富，杯測總成績達90分以上",half:"6825",one:"",soldOut:true,presale:true,award:true},
   {region:"中美洲",name:"巴拿馬翡翠莊園綠標藝伎 GEISHA",process:"水洗",notes:"香甜撲鼻的檸檬皮、佛手柑、茉莉與水蜜桃香氣，風味優雅細緻",half:"",one:"5510",soldOut:false,presale:true,award:false},
   {region:"中美洲",name:"巴拿馬藍標藝伎 GEISHA",process:"水洗",notes:"甜花香，伯爵柔香，柑橘，杏桃",half:"",one:"2630",soldOut:false,presale:true,award:false},
@@ -237,7 +235,7 @@ const STATIC_DATA = [
   {region:"非洲",name:"衣索比亞利姆獅王花蜜藝妓",process:"水洗",notes:"獨特的花蜜香氣，精緻的柑橘、白花香與紅槿甜感",half:"750",one:"1450",soldOut:false,presale:false,award:false},
   {region:"太平洋",name:"夏威夷阿里安娜可娜 KONA",process:"水洗",notes:"香草植物、蔗糖、微花香；美國白宮客客專用，極致香氣油脂醇厚。2007、2011年贏得夏威夷全洲可娜節發春第一名",half:"",one:"5560",soldOut:false,presale:true,award:true},
   {region:"太平洋",name:"夏威夷可娜圓豆",process:"水洗",notes:"堅果香甜與木果的熟香、奶油般滑順口感，明亮的酸味帶出回甘及水果的香甜",half:"1330",one:"2630",soldOut:true,presale:false,award:true},
-  {region:"亞洲區",name:"印尼黃金曼特寧",process:"水洗",notes:"黑巧克力、堅果、雪松、焦糖、奶油、甜藥草、甜感圓潤，風味濃厚紮實",half:"520",one:"1000",soldOut:false,presale:false,award:false},
+  {region:"亞洲",name:"印尼黃金曼特寧",process:"水洗",notes:"黑巧克力、堅果、雪松、焦糖、奶油、甜藥草、甜感圓潤，風味濃厚紮實",half:"520",one:"1000",soldOut:false,presale:false,award:false},
   {region:"職人精選",name:"肯馬仕義式特調",process:"水洗",notes:"肯馬仕精選莊園豆，做拿鐵可保有濃厚的咖啡香",half:"440",one:"840",soldOut:false,presale:false,award:false},
   {region:"職人精選",name:"肯馬仕黃金曼巴",process:"水洗",notes:"精準深度烘焙，香濃甘醇、快速回甘、層次分明",half:"440",one:"840",soldOut:false,presale:false,award:false},
   {region:"職人精選",name:"花漾清晨（Floral Morning）",process:"水洗",notes:"花香馥郁、柑橘清新，濃郁的茉莉花香與柑橘酸甜交織，餘韻溫柔悠長",half:"440",one:"840",soldOut:false,presale:false,award:true},
@@ -376,7 +374,7 @@ function renderCartBody(){
       <div class="form-group"><label class="form-label">寄送地址 <span>*</span></label><input class="form-input" id="f-addr" type="text" placeholder="縣市、鄉鎮市區、路段門號"></div>
       <div class="form-group"><label class="form-label">備註</label><input class="form-input" id="f-note" type="text" placeholder="烘焙度偏好、包裝需求…"></div>
       <button class="submit-btn" onclick="submitOrder()">確認送出訂單</button>
-      <div class="submit-note">送出後將開啟 LINE 與您確認，並回覆付款方式與出貨時程</div>
+      <div class="submit-note">送出後我們將透過 Email 與您確認訂單細節與出貨時程</div>
     </div>`;
 }
 
@@ -449,20 +447,19 @@ async function submitOrder(){
     });
     document.body.appendChild(form);
   } else {
-    // 備用：LINE 通知
-    const lineMsg=`【肯馬仕訂單】${orderNo}
-品項：${itemsText}
-合計：$${total.toLocaleString()}
-時間：${ts}`;
-    const lineURL=`https://line.me/ti/p/@canmas?text=${encodeURIComponent(lineMsg)}`;
+    // 備用：Email 通知
+    const emailSubject = `【肯馬仕新訂單】${orderNo}`;
+    const emailBody = `姓名：${name}\n電話：${phone}\nEmail：${email}\n地址：${addr}\n備註：${note}\n\n品項：${itemsText}\n合計：$${total.toLocaleString()}\n時間：${ts}`;
+    const mailURL = `mailto:canmas13@gmail.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+    
     document.getElementById("cartBody").innerHTML=`
       <div class="success-panel">
         <div class="success-icon">✓</div>
-        <div class="success-title">訂單已建立！</div>
-        <div class="success-msg">付款連結將透過 LINE 傳送給您<br>我們將盡快安排出貨</div>
+        <div class="success-title">訂單已送出！</div>
+        <div class="success-msg">將開啟您的 Email 草稿以便傳送明細<br>我們將盡快與您確認出貨事宜</div>
         <div class="order-num">訂單編號：${orderNo}</div>
       </div>`;
-    setTimeout(()=>{ window.open(lineURL,"_blank"); closeCart(); }, 1800);
+    setTimeout(()=>{ window.location.href = mailURL; closeCart(); }, 1800);
   }
 }
 
