@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>canmas coffee — 精品豆單</title>
-<meta name="description" content="肯馬仕精品咖啡 CANMAS Coffee，竹北預約制精品咖啡bistro，精選世界各地莊園咖啡豆">
+<title>canmas coffee - 精品豆單</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Noto+Serif+TC:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -13,12 +12,8 @@
   --bg-1:        #162258;
   --bg-2:        #1A2A6A;
   --bg-3:        #1F3278;
-  --bg-4:        #253C8C;
-  --cobalt:      #1A3FC8;
-  --cobalt-bright:#2952D8;
   --gold:        #D4A843;
   --gold-light:  #EFC76A;
-  --gold-pale:   #F7E9C4;
   --cream:       #EEE8D8;
   --silver:      #B8C8E8;
   --silver-dim:  #6878A8;
@@ -32,129 +27,106 @@
 html{scroll-behavior:smooth;}
 body{background:var(--bg);color:var(--cream);font-family:'Noto Serif TC',serif;min-height:100vh;-webkit-font-smoothing:antialiased;}
 
-/* ── HEADER ── */
 .header{background:var(--bg-1);border-bottom:1px solid var(--border-gold);padding:1.5rem 1.5rem 1.25rem;position:sticky;top:0;z-index:100;}
 .header-inner{max-width:680px;margin:0 auto;}
 .header-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;}
 .brand-name{font-family:'Cinzel',serif;font-size:26px;font-weight:500;letter-spacing:0.1em;color:var(--gold);}
 .brand-sub{font-size:13px;color:var(--silver-dim);letter-spacing:0.15em;margin-top:4px;}
-.mail-btn{display:flex;align-items:center;gap:7px;background:var(--silver-dark);color:var(--cream);border:1px solid var(--border-blue);border-radius:28px;padding:10px 18px;font-size:14px;font-weight:500;font-family:'Noto Serif TC',serif;cursor:pointer;text-decoration:none;white-space:nowrap;flex-shrink:0;transition:opacity 0.15s,transform 0.1s;}
-.mail-btn:hover{opacity:0.88;border-color:var(--gold-light);}
-.mail-btn:active{transform:scale(0.97);}
+.mail-btn{display:flex;align-items:center;gap:7px;background:var(--silver-dark);color:var(--cream);border:1px solid var(--border-blue);border-radius:28px;padding:10px 18px;font-size:14px;font-weight:500;font-family:'Noto Serif TC',serif;cursor:pointer;text-decoration:none;white-space:nowrap;flex-shrink:0;}
 .search-wrap{position:relative;}
 .search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:0.4;pointer-events:none;}
-.search-input{width:100%;background:var(--bg-3);border:1px solid var(--border-blue);border-radius:10px;color:var(--cream);font-family:'Noto Serif TC',serif;font-size:15px;padding:11px 14px 11px 38px;outline:none;transition:border-color 0.2s;}
+.search-input{width:100%;background:var(--bg-3);border:1px solid var(--border-blue);border-radius:10px;color:var(--cream);font-family:'Noto Serif TC',serif;font-size:15px;padding:11px 14px 11px 38px;outline:none;}
 .search-input::placeholder{color:var(--silver-dark);}
-.search-input:focus{border-color:rgba(212,168,67,0.5);}
 
-/* ── TABS ── */
 .tabs-wrap{background:var(--bg-1);border-bottom:1px solid var(--border-gold);overflow-x:auto;scrollbar-width:none;}
 .tabs-wrap::-webkit-scrollbar{display:none;}
 .tabs{display:flex;padding:0 1.5rem;max-width:680px;margin:0 auto;}
-.tab{padding:13px 16px;font-size:15px;font-family:'Noto Serif TC',serif;color:var(--silver-dim);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:color 0.15s;letter-spacing:0.05em;}
+.tab{padding:13px 16px;font-size:15px;font-family:'Noto Serif TC',serif;color:var(--silver-dim);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;}
 .tab.active{color:var(--gold);border-bottom-color:var(--gold);}
-.tab:hover:not(.active){color:var(--silver);}
 
-/* ── COUNT BAR ── */
 .count-bar{padding:8px 1.5rem;font-size:12px;color:var(--silver-dark);background:var(--bg-2);border-bottom:1px solid var(--border-soft);}
 .count-bar-inner{max-width:680px;margin:0 auto;}
 
-/* ── ITEM LIST ── */
 .list{padding-bottom:9rem;max-width:680px;margin:0 auto;}
-.item{padding:20px 1.5rem;border-bottom:1px solid var(--border-soft);transition:background 0.12s;}
-.item:hover{background:var(--bg-2);}
+.item{padding:20px 1.5rem;border-bottom:1px solid var(--border-soft);}
 .item.sold-out{opacity:0.3;}
-
 .item-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;}
-.item-name{font-size:16px;font-weight:500;color:var(--cream);line-height:1.5;flex:1;letter-spacing:0.02em;}
-
+.item-name{font-size:16px;font-weight:500;color:var(--cream);line-height:1.5;flex:1;}
 .price-block{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
 .price-row{display:flex;align-items:center;gap:6px;}
-.price-label{font-size:11px;color:var(--silver-dim);letter-spacing:0.05em;}
-.price-value{font-size:15px;color:var(--gold-light);font-weight:500;white-space:nowrap;}
+.price-label{font-size:11px;color:var(--silver-dim);}
+.price-value{font-size:15px;color:var(--gold-light);font-weight:500;}
 
 .item-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
-.tag{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border-blue);color:var(--silver-dim);background:var(--bg-3);letter-spacing:0.03em;}
-.tag.process{color:#A8C8F8;border-color:rgba(168,200,248,0.3);background:rgba(168,200,248,0.08);}
-.tag.sold{color:#F08080;border-color:rgba(224,85,85,0.35);background:rgba(224,85,85,0.08);}
-.tag.presale{color:#F0C870;border-color:rgba(240,200,112,0.35);background:rgba(240,200,112,0.07);}
-.tag.award{color:var(--gold-light);border-color:rgba(212,168,67,0.35);background:rgba(212,168,67,0.07);}
+.tag{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border-blue);color:var(--silver-dim);background:var(--bg-3);}
 
 .item-notes{font-size:14px;color:var(--silver);line-height:1.8;margin-bottom:12px;}
-
-/* ── ADD ROW ── */
 .add-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
-.size-select{background:var(--bg-3);border:1px solid var(--border-blue);border-radius:8px;color:var(--cream);font-family:'Noto Serif TC',serif;font-size:13px;padding:7px 10px;outline:none;cursor:pointer;transition:border-color 0.2s;}
-.size-select:focus{border-color:var(--gold);}
+.size-select{background:var(--bg-3);border:1px solid var(--border-blue);border-radius:8px;color:var(--cream);font-family:'Noto Serif TC',serif;font-size:13px;padding:7px 10px;}
 .qty-wrap{display:flex;align-items:center;gap:5px;}
-.qty-btn{width:30px;height:30px;background:var(--bg-3);border:1px solid var(--border-blue);border-radius:7px;color:var(--cream);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color 0.15s,background 0.15s;}
-.qty-btn:hover{background:var(--bg-4);border-color:var(--gold);}
+.qty-btn{width:30px;height:30px;background:var(--bg-3);border:1px solid var(--border-blue);border-radius:7px;color:var(--cream);font-size:17px;cursor:pointer;}
 .qty-val{font-size:14px;color:var(--cream);min-width:22px;text-align:center;}
-.add-btn{display:flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--gold-light);border-radius:8px;color:var(--gold-light);font-family:'Noto Serif TC',serif;font-size:13px;padding:7px 14px;cursor:pointer;transition:background 0.15s;}
-.add-btn:hover{background:rgba(212,168,67,0.12);}
-.added-label{font-size:12px;color:#85c785;display:none;}
+.add-btn{display:flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--gold-light);border-radius:8px;color:var(--gold-light);font-size:13px;padding:7px 14px;cursor:pointer;}
 
-/* ── CART FAB ── */
-.cart-fab{position:fixed;bottom:1.75rem;right:1.5rem;z-index:200;display:flex;align-items:center;gap:9px;background:var(--gold);color:var(--bg);border:none;border-radius:32px;padding:14px 22px;font-size:15px;font-weight:500;font-family:'Noto Serif TC',serif;cursor:pointer;box-shadow:0 6px 24px rgba(212,168,67,0.45);transition:opacity 0.15s,transform 0.1s;}
-.cart-fab:hover{opacity:0.92;}
-.cart-fab:active{transform:scale(0.97);}
+.cart-fab{position:fixed;bottom:1.75rem;right:1.5rem;z-index:200;display:flex;align-items:center;gap:9px;background:var(--gold);color:var(--bg);border:none;border-radius:32px;padding:14px 22px;font-size:15px;font-weight:500;font-family:'Noto Serif TC',serif;cursor:pointer;box-shadow:0 6px 24px rgba(212,168,67,0.45);}
 .cart-badge{background:var(--danger);color:#fff;border-radius:50%;width:22px;height:22px;font-size:12px;display:flex;align-items:center;justify-content:center;font-weight:500;}
 
-/* ── OVERLAY ── */
-.overlay{position:fixed;inset:0;background:rgba(8,14,40,0.88);z-index:300;opacity:0;pointer-events:none;transition:opacity 0.25s;}
+.overlay{position:fixed;inset:0;background:rgba(8,14,40,0.88);z-index:300;opacity:0;pointer-events:none;}
 .overlay.show{opacity:1;pointer-events:all;}
 
-/* ── CART PANEL ── */
-.cart-panel{position:fixed;bottom:0;left:0;right:0;max-width:680px;margin:0 auto;background:var(--bg-1);border-top:1px solid var(--border-gold);border-radius:22px 22px 0 0;z-index:400;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);max-height:92vh;overflow-y:auto;}
+.cart-panel{position:fixed;bottom:0;left:0;right:0;max-width:680px;margin:0 auto;background:var(--bg-1);border-top:1px solid var(--border-gold);border-radius:22px 22px 0 0;z-index:400;transform:translateY(100%);transition:transform 0.3s;max-height:92vh;overflow-y:auto;}
 .cart-panel.show{transform:translateY(0);}
 .cart-header{display:flex;align-items:center;justify-content:space-between;padding:1.5rem 1.5rem 1.1rem;border-bottom:1px solid var(--border-soft);position:sticky;top:0;background:var(--bg-1);z-index:1;}
-.cart-title{font-size:17px;font-weight:500;color:var(--cream);letter-spacing:0.05em;}
-.cart-close{background:none;border:none;color:var(--silver-dim);font-size:24px;cursor:pointer;padding:0 4px;line-height:1;}
-.cart-close:hover{color:var(--cream);}
+.cart-title{font-size:17px;font-weight:500;color:var(--cream);}
+.cart-close{background:none;border:none;color:var(--silver-dim);font-size:24px;cursor:pointer;}
 .cart-items{padding:0.75rem 1.5rem;}
 .cart-item{display:flex;align-items:flex-start;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border-soft);gap:10px;}
 .cart-item-info{flex:1;}
 .cart-item-name{font-size:14px;color:var(--cream);line-height:1.5;}
 .cart-item-detail{font-size:12px;color:var(--silver-dim);margin-top:3px;}
 .cart-item-subtotal{font-size:13px;color:var(--gold-light);margin-top:3px;}
-.cart-item-remove{background:none;border:none;color:var(--silver-dark);cursor:pointer;font-size:20px;padding:0 4px;flex-shrink:0;}
-.cart-item-remove:hover{color:var(--danger);}
-.cart-empty{padding:2.5rem;text-align:center;color:var(--silver-dark);font-size:14px;line-height:1.8;}
+.cart-item-remove{background:none;border:none;color:var(--silver-dark);cursor:pointer;font-size:20px;}
+.cart-empty{padding:2.5rem;text-align:center;color:var(--silver-dark);font-size:14px;}
 
 .cart-total{padding:14px 1.5rem;border-top:1px solid var(--border-gold);display:flex;justify-content:space-between;align-items:center;background:var(--bg-2);}
 .cart-total-label{font-size:14px;color:var(--silver);}
 .cart-total-amount{font-size:20px;color:var(--gold);font-weight:500;}
 
-/* ── ORDER FORM ── */
 .order-form{padding:1.25rem 1.5rem 2rem;border-top:1px solid var(--border-soft);}
-.form-section-title{font-size:14px;color:var(--silver-dim);margin-bottom:1.1rem;padding-bottom:8px;border-bottom:1px solid var(--border-soft);letter-spacing:0.05em;}
+.form-section-title{font-size:14px;color:var(--silver-dim);margin-bottom:1.1rem;padding-bottom:8px;border-bottom:1px solid var(--border-soft);}
 .form-group{margin-bottom:14px;}
 .form-label{font-size:13px;color:var(--silver);display:block;margin-bottom:6px;}
-.form-label span{color:var(--danger);}
-.form-input{width:100%;background:var(--bg-2);border:1px solid var(--border-blue);border-radius:9px;color:var(--cream);font-family:'Noto Serif TC',serif;font-size:15px;padding:11px 14px;outline:none;transition:border-color 0.2s;}
-.form-input:focus{border-color:rgba(212,168,67,0.5);}
-.form-input::placeholder{color:var(--silver-dark);}
+.form-input{width:100%;background:var(--bg-2);border:1px solid var(--border-blue);border-radius:9px;color:var(--cream);font-size:15px;padding:11px 14px;outline:none;font-family:'Noto Serif TC',serif;}
+
+/* 美化下拉選單 */
+select.form-input {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%23B8C8E8" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+  background-repeat: no-repeat;
+  background-position-x: 96%;
+  background-position-y: center;
+  padding-right: 32px;
+}
+
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.submit-btn{width:100%;background:var(--gold);color:var(--bg);border:none;border-radius:11px;padding:15px;font-size:16px;font-weight:500;font-family:'Noto Serif TC',serif;cursor:pointer;margin-top:6px;transition:opacity 0.15s;letter-spacing:0.05em;}
-.submit-btn:hover{opacity:0.88;}
+.address-row {display:flex; gap:10px; margin-bottom:10px;}
+
+.payment-options { display: flex; gap: 15px; margin-bottom: 15px; }
+.payment-option { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--cream); cursor: pointer; }
+
+.submit-btn{width:100%;background:var(--gold);color:var(--bg);border:none;border-radius:11px;padding:15px;font-size:16px;font-weight:500;font-family:'Noto Serif TC',serif;cursor:pointer;margin-top:6px;}
 .submit-btn:disabled{opacity:0.45;cursor:not-allowed;}
-.submit-note{font-size:12px;color:var(--silver-dark);text-align:center;margin-top:10px;line-height:1.7;}
 
-/* ── SUCCESS ── */
 .success-panel{padding:3rem 1.5rem;text-align:center;}
-.success-icon{font-size:48px;margin-bottom:14px;}
 .success-title{font-size:18px;font-weight:500;color:var(--cream);margin-bottom:10px;}
-.success-msg{font-size:14px;color:var(--silver);line-height:1.8;}
+.success-msg{font-size:14px;color:var(--silver);line-height:1.8;margin-bottom: 15px;}
 .order-num{font-size:13px;color:var(--gold);margin-top:12px;letter-spacing:0.08em;}
+.bank-info { background: var(--bg-2); padding: 15px; border-radius: 8px; text-align: left; font-size: 13px; color: var(--cream); line-height: 1.6; margin-bottom: 15px; border: 1px solid var(--border-blue); }
 
-/* ── FOOTER ── */
-.footer{padding:2.5rem 1.5rem;border-top:1px solid var(--border-gold);text-align:center;max-width:680px;margin:0 auto;}
-.footer-brand{font-family:'Cinzel',serif;font-size:15px;color:var(--gold);margin-bottom:14px;letter-spacing:0.12em;}
-.footer-links{display:flex;justify-content:center;flex-wrap:wrap;gap:12px 22px;margin-bottom:14px;}
-.footer-links a{font-size:13px;color:var(--silver-dim);text-decoration:none;transition:color 0.15s;}
-.footer-links a:hover{color:var(--gold);}
-.footer-meta{font-size:12px;color:var(--silver-dark);}
-.no-result{padding:4rem 1.5rem;text-align:center;color:var(--silver-dark);font-size:15px;}
+.footer{padding:2.5rem 1.5rem;text-align:center;max-width:680px;margin:0 auto;}
+.footer-brand{font-size:15px;color:var(--gold);margin-bottom:14px;}
 </style>
 </head>
 <body>
@@ -166,13 +138,9 @@ body{background:var(--bg);color:var(--cream);font-family:'Noto Serif TC',serif;m
         <div class="brand-name">canmas coffee</div>
         <div class="brand-sub">精品咖啡豆單 · 竹北預約制</div>
       </div>
-      <a class="mail-btn" href="mailto:canmas13@gmail.com" target="_blank" rel="noopener">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-        聯絡我們
-      </a>
+      <a class="mail-btn" href="mailto:canmas13@gmail.com" target="_blank" rel="noopener">聯絡我們</a>
     </div>
     <div class="search-wrap">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input class="search-input" id="search" type="text" placeholder="搜尋豆名、風味、產地…" oninput="render()">
     </div>
   </div>
@@ -182,21 +150,8 @@ body{background:var(--bg);color:var(--cream);font-family:'Noto Serif TC',serif;m
 <div class="count-bar"><div class="count-bar-inner" id="count-bar"></div></div>
 <div class="list" id="list"></div>
 
-<div class="footer">
-  <div class="footer-brand">CANMAS · 肯馬仕有限公司</div>
-  <div class="footer-links">
-    <a href="mailto:canmas13@gmail.com">canmas13@gmail.com</a>
-    <a href="tel:03-2605030">03-2605030</a>
-    <a href="tel:0935319135">0935-319-135</a>
-    <a href="https://www.canmas.com.tw" target="_blank">canmas.com.tw</a>
-  </div>
-  <div class="footer-meta">新竹縣竹北市光明六路東二段36號2樓 · 預約制</div>
-</div>
-
 <button class="cart-fab" id="cartFab" onclick="openCart()" style="display:none">
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-  購物清單
-  <span class="cart-badge" id="cartBadge">0</span>
+  購物清單 <span class="cart-badge" id="cartBadge">0</span>
 </button>
 
 <div class="overlay" id="overlay" onclick="closeCart()"></div>
@@ -209,50 +164,50 @@ body{background:var(--bg);color:var(--cream);font-family:'Noto Serif TC',serif;m
 </div>
 
 <script>
+// ==========================================
+// 網址設定區
+// ==========================================
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR7xuhoS9wYuv5_vzG7TzWsQdUjdA7RkwHQJYycnvynDMU0if90IOJEUyLOH-N8Tht6SvLcuwDFtVID/pub?output=csv";
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1HA2LOmb2F7oGXpxDWAQbRBXvBwO9xO5IUzkRCtehw7n_wK2fCX1CttKG32MgUCXb/exec";
-const ORDER_API_URL = "/.netlify/functions/order"; // Netlify Function
+const ORDER_API_URL = "/.netlify/functions/order"; 
 
-const STATIC_DATA = [
-  {region:"中美洲",name:"聖海倫娜 Bamboo Hedge Estate Screen",process:"水洗",notes:"花香，春草植物，黃肉李，柑橘",half:"",one:"16800",soldOut:true,presale:true,award:false},
-  {region:"中美洲",name:"牙買加藍山",process:"水洗",notes:"咖啡中的王者，枝果、杏仁果、焦糖、李子，香氣優雅，入喉滑順回甘",half:"",one:"6930",soldOut:true,presale:true,award:false},
-  {region:"中美洲",name:"巴拿馬翡翠莊園紅標藝伎 GEISHA",process:"水洗",notes:"明亮的花朵香、佛手柑、荔枝香氣，漸漸轉化帶玫瑰香，整體花果香感明顯，層次鮮明豐富，杯測總成績達90分以上",half:"6825",one:"",soldOut:true,presale:true,award:true},
-  {region:"中美洲",name:"巴拿馬翡翠莊園綠標藝伎 GEISHA",process:"水洗",notes:"香甜撲鼻的檸檬皮、佛手柑、茉莉與水蜜桃香氣，風味優雅細緻",half:"",one:"5510",soldOut:false,presale:true,award:false},
-  {region:"中美洲",name:"巴拿馬藍標藝伎 GEISHA",process:"水洗",notes:"甜花香，伯爵柔香，柑橘，杏桃",half:"",one:"2630",soldOut:false,presale:true,award:false},
-  {region:"中美洲",name:"瓜地馬拉安提瓜泉拉卡摩那花神",process:"水洗",notes:"奶香、紅莓、榛果、柑橘、黑李",half:"550",one:"1050",soldOut:false,presale:false,award:true},
-  {region:"中美洲",name:"瓜地馬拉薇薇特南果",process:"水洗",notes:"濃郁巧克力風味、西洋梨、蘋果、肉桂的香氣，帶出溫和的火烤雪松木香和焦糖，層次豐富",half:"440",one:"820",soldOut:false,presale:false,award:false},
-  {region:"南美洲",name:"哥倫比亞梅德琪",process:"水洗",notes:"榛果、可可、香草植物、微花香、柑橘",half:"440",one:"840",soldOut:false,presale:false,award:true},
-  {region:"南美洲",name:"巴西喜拉朵日曬",process:"日曬",notes:"胡桃、核果、杏仁、花生糖、蔗糖",half:"380",one:"690",soldOut:false,presale:false,award:false},
-  {region:"南美洲",name:"巴西摩吉安娜瑪瓏聖塔利亞莊園",process:"日曬",notes:"乾香帶榛果、焦糖、牛奶巧克力，厚實飽滿、甜度佳、尾韻綿長",half:"380",one:"690",soldOut:false,presale:false,award:false},
-  {region:"非洲",name:"衣索匹亞非洲之星卡法森林香水檸檬藝妓",process:"水洗",notes:"香瓜、甜桃、柑橘、蜜蘋果、白花、番茄、香水檸檬",half:"690",one:"1280",soldOut:false,presale:false,award:true},
-  {region:"非洲",name:"衣索匹亞古吉格蕾娜茉莉蜜糖藝妓一級",process:"水洗",notes:"野薑花、柑橘、水梨、薑檸檬",half:"690",one:"1280",soldOut:false,presale:false,award:true},
-  {region:"非洲",name:"衣索耶加雪菲果丁丁",process:"水洗",notes:"入口後花香氣息、白柚、可可、李子甜感明顯，回韻強烈，層次豐富",half:"590",one:"1155",soldOut:false,presale:false,award:false},
-  {region:"非洲",name:"衣索耶加雪夫G2",process:"水洗",notes:"白花、柑橘、桃子、荔枝，香味豐富",half:"485",one:"950",soldOut:false,presale:false,award:false},
-  {region:"非洲",name:"肯亞 涅里產區 蜂蜜 TOP AA級",process:"水洗",notes:"新鮮莓果、焦糖、柚子香、咖啡獎果甜、明亮多汁、清脆香甜",half:"550",one:"1000",soldOut:false,presale:false,award:false},
-  {region:"非洲",name:"衣索比亞 卡法森林WushWush日曬",process:"日曬",notes:"柚香、白桃、葡萄、紅槿甜、桂花釀",half:"600",one:"1150",soldOut:false,presale:false,award:true},
-  {region:"非洲",name:"衣索比亞 耶加雪菲 喬昂萊 水洗",process:"水洗",notes:"白柚、白花、黃檸檬",half:"550",one:"1080",soldOut:false,presale:false,award:false},
-  {region:"非洲",name:"衣索比亞 耶加雪菲 紅蜜",process:"水洗",notes:"佛手柑、檸檬、雞蛋花",half:"550",one:"1080",soldOut:false,presale:false,award:false},
-  {region:"非洲",name:"衣索比亞利姆獅王花蜜藝妓",process:"水洗",notes:"獨特的花蜜香氣，精緻的柑橘、白花香與紅槿甜感",half:"750",one:"1450",soldOut:false,presale:false,award:false},
-  {region:"太平洋",name:"夏威夷阿里安娜可娜 KONA",process:"水洗",notes:"香草植物、蔗糖、微花香；美國白宮客客專用，極致香氣油脂醇厚。2007、2011年贏得夏威夷全洲可娜節發春第一名",half:"",one:"5560",soldOut:false,presale:true,award:true},
-  {region:"太平洋",name:"夏威夷可娜圓豆",process:"水洗",notes:"堅果香甜與木果的熟香、奶油般滑順口感，明亮的酸味帶出回甘及水果的香甜",half:"1330",one:"2630",soldOut:true,presale:false,award:true},
-  {region:"亞洲",name:"印尼黃金曼特寧",process:"水洗",notes:"黑巧克力、堅果、雪松、焦糖、奶油、甜藥草、甜感圓潤，風味濃厚紮實",half:"520",one:"1000",soldOut:false,presale:false,award:false},
-  {region:"職人精選",name:"肯馬仕義式特調",process:"水洗",notes:"肯馬仕精選莊園豆，做拿鐵可保有濃厚的咖啡香",half:"440",one:"840",soldOut:false,presale:false,award:false},
-  {region:"職人精選",name:"肯馬仕黃金曼巴",process:"水洗",notes:"精準深度烘焙，香濃甘醇、快速回甘、層次分明",half:"440",one:"840",soldOut:false,presale:false,award:false},
-  {region:"職人精選",name:"花漾清晨（Floral Morning）",process:"水洗",notes:"花香馥郁、柑橘清新，濃郁的茉莉花香與柑橘酸甜交織，餘韻溫柔悠長",half:"440",one:"840",soldOut:false,presale:false,award:true},
-  {region:"職人精選",name:"莓果戀曲（Berry Sonata）",process:"水洗",notes:"濃郁莓果、柔順甜感，甜美的莓果香氣與焦糖餘韻，口感濃郁且甘平衡",half:"460",one:"890",soldOut:false,presale:false,award:true},
-  {region:"職人精選",name:"風姿卓越特調咖啡",process:"水洗",notes:"花果香與酸甜層次，展現茉莉花香、莓果甜感、柑橘酸郁以及圓潤餘韻，適合手沖或冷萃",half:"460",one:"890",soldOut:false,presale:false,award:true},
-  {region:"精選濾掛",name:"肯馬仕經典總匯（20入）",process:"混和",notes:"精選各式肯馬仕經典暢銷豆，共20包",half:"",one:"840",soldOut:false,presale:false,award:false},
-  {region:"精選濾掛",name:"肯馬仕行家總匯（20入）",process:"混和",notes:"精選肯馬仕經典暢銷豆＋精品行家豆，共20包",half:"",one:"1120",soldOut:false,presale:false,award:true},
-  {region:"精選濾掛",name:"肯馬仕莊園總匯（10入）",process:"混和",notes:"精選肯馬仕經典暢銷豆＋精品行家豆，共10包",half:"",one:"480",soldOut:false,presale:false,award:false},
-  {region:"精選濾掛",name:"瓜地馬拉薇薇特南果（10入）",process:"水洗",notes:"核桃、杏仁、黑巧克力、麥芽糖",half:"",one:"420",soldOut:false,presale:false,award:false},
-  {region:"精選濾掛",name:"印尼黃金曼特寧三次手選（10入）",process:"水洗",notes:"黑巧克力、堅果、雪松、焦糖、奶油、甜藥草",half:"",one:"480",soldOut:false,presale:false,award:false},
-  {region:"精選濾掛",name:"衣索匹亞耶加雪夫G2（10入）",process:"水洗",notes:"花香、白桃、柑橘、紅莓，香味豐富",half:"",one:"530",soldOut:false,presale:false,award:false},
-  {region:"精選濾掛",name:"肯亞非洲草原AA Top（10入）",process:"水洗",notes:"青蘋果、梅子、楓糖，風味多變、豐富而複雜",half:"",one:"580",soldOut:false,presale:false,award:false},
-  {region:"精選濾掛",name:"哥倫比亞梅德琪（10入）",process:"水洗",notes:"榛果、可可、香草植物、微花香、柑橘",half:"",one:"420",soldOut:false,presale:false,award:false},
-];
+// 匯款帳號設定
+const BANK_INFO = `
+銀行代碼：000 (請填寫真實代碼)<br>
+銀行名稱：測試銀行<br>
+帳戶號碼：1234567890<br>
+戶名：肯馬仕有限公司
+`;
+
+// 台灣行政區資料庫
+const twCounties = {
+  "臺北市": ["中正區", "大同區", "中山區", "松山區", "大安區", "萬華區", "信義區", "士林區", "北投區", "內湖區", "南港區", "文山區"],
+  "新北市": ["萬里區", "金山區", "板橋區", "汐止區", "深坑區", "石碇區", "瑞芳區", "平溪區", "雙溪區", "貢寮區", "新店區", "坪林區", "烏來區", "永和區", "中和區", "土城區", "三峽區", "樹林區", "鶯歌區", "三重區", "新莊區", "泰山區", "林口區", "蘆洲區", "五股區", "八里區", "淡水區", "三芝區", "石門區"],
+  "桃園市": ["中壢區", "平鎮區", "龍潭區", "楊梅區", "新屋區", "觀音區", "桃園區", "龜山區", "八德區", "大溪區", "復興區", "大園區", "蘆竹區"],
+  "臺中市": ["中區", "東區", "南區", "西區", "北區", "北屯區", "西屯區", "南屯區", "太平區", "大里區", "霧峰區", "烏日區", "豐原區", "后里區", "石岡區", "東勢區", "和平區", "新社區", "潭子區", "大雅區", "神岡區", "大肚區", "沙鹿區", "龍井區", "梧棲區", "清水區", "大甲區", "外埔區", "大安區"],
+  "臺南市": ["中西區", "東區", "南區", "北區", "安平區", "安南區", "永康區", "歸仁區", "新化區", "左鎮區", "玉井區", "楠西區", "南化區", "仁德區", "關廟區", "龍崎區", "官田區", "麻豆區", "佳里區", "西港區", "七股區", "將軍區", "學甲區", "北門區", "新營區", "後壁區", "白河區", "東山區", "六甲區", "下營區", "柳營區", "鹽水區", "善化區", "大內區", "山上區", "新市區", "安定區"],
+  "高雄市": ["新興區", "前金區", "苓雅區", "鹽埕區", "鼓山區", "旗津區", "前鎮區", "三民區", "楠梓區", "小港區", "左營區", "仁武區", "大社區", "東沙群島", "南沙群島", "岡山區", "路竹區", "阿蓮區", "田寮區", "燕巢區", "橋頭區", "梓官區", "彌陀區", "永安區", "湖內區", "鳳山區", "大寮區", "林園區", "鳥松區", "大樹區", "旗山區", "美濃區", "六龜區", "內門區", "杉林區", "甲仙區", "桃源區", "那瑪夏區", "茂林區"],
+  "基隆市": ["仁愛區", "信義區", "中正區", "中山區", "安樂區", "暖暖區", "七堵區"],
+  "新竹市": ["東區", "北區", "香山區"],
+  "嘉義市": ["東區", "西區"],
+  "新竹縣": ["竹北市", "湖口鄉", "新豐鄉", "新埔鎮", "關西鎮", "芎林鄉", "寶山鄉", "竹東鎮", "五峰鄉", "橫山鄉", "尖石鄉", "北埔鄉", "峨眉鄉"],
+  "苗栗縣": ["竹南鎮", "頭份市", "三灣鄉", "南庄鄉", "獅潭鄉", "後龍鎮", "通霄鎮", "苑裡鎮", "苗栗市", "造橋鄉", "頭屋鄉", "公館鄉", "大湖鄉", "泰安鄉", "銅鑼鄉", "三義鄉", "西湖鄉", "卓蘭鎮"],
+  "彰化縣": ["彰化市", "芬園鄉", "花壇鄉", "秀水鄉", "鹿港鎮", "福興鄉", "線西鄉", "和美鎮", "伸港鄉", "員林市", "社頭鄉", "永靖鄉", "埔心鄉", "溪湖鎮", "大村鄉", "埔鹽鄉", "田中鎮", "北斗鎮", "田尾鄉", "埤頭鄉", "溪州鄉", "竹塘鄉", "二林鎮", "大城鄉", "芳苑鄉", "二水鄉"],
+  "南投縣": ["南投市", "中寮鄉", "草屯鎮", "國姓鄉", "埔里鎮", "仁愛鄉", "名間鄉", "集集鎮", "水里鄉", "魚池鄉", "信義鄉", "竹山鎮", "鹿谷鄉"],
+  "雲林縣": ["斗南鎮", "大埤鄉", "虎尾鎮", "土庫鎮", "褒忠鄉", "東勢鄉", "臺西鄉", "崙背鄉", "麥寮鄉", "斗六市", "林內鄉", "古坑鄉", "莿桐鄉", "西螺鎮", "二崙鄉", "北港鎮", "水林鄉", "口湖鄉", "四湖鄉", "元長鄉"],
+  "嘉義縣": ["番路鄉", "梅山鄉", "竹崎鄉", "阿里山鄉", "中埔鄉", "大埔鄉", "水上鄉", "鹿草鄉", "太保市", "朴子市", "東石鄉", "六腳鄉", "新港鄉", "民雄鄉", "大林鎮", "溪口鄉", "義竹鄉", "布袋鎮"],
+  "屏東縣": ["屏東市", "三地門鄉", "霧臺鄉", "瑪家鄉", "九如鄉", "里港鄉", "高樹鄉", "鹽埔鄉", "長治鄉", "麟洛鄉", "竹田鄉", "內埔鄉", "萬丹鄉", "潮州鎮", "泰武鄉", "來義鄉", "萬巒鄉", "崁頂鄉", "新埤鄉", "南州鄉", "林邊鄉", "東港鎮", "琉球鄉", "佳冬鄉", "新園鄉", "枋寮鄉", "枋山鄉", "春日鄉", "獅子鄉", "車城鄉", "牡丹鄉", "恆春鎮", "滿州鄉"],
+  "宜蘭縣": ["宜蘭市", "頭城鎮", "礁溪鄉", "壯圍鄉", "員山鄉", "羅東鎮", "三星鄉", "大同鄉", "五結鄉", "冬山鄉", "蘇澳鎮", "南澳鄉"],
+  "花蓮縣": ["花蓮市", "新城鄉", "秀林鄉", "吉安鄉", "壽豐鄉", "鳳林鎮", "光復鄉", "豐濱鄉", "瑞穗鄉", "萬榮鄉", "玉里鎮", "卓溪鄉", "富里鄉"],
+  "臺東縣": ["臺東市", "綠島鄉", "蘭嶼鄉", "延平鄉", "卑南鄉", "鹿野鄉", "關山鎮", "海端鄉", "池上鄉", "東河鄉", "成功鎮", "長濱鄉", "太麻里鄉", "金峰鄉", "大武鄉", "達仁鄉"],
+  "澎湖縣": ["馬公市", "西嶼鄉", "望安鄉", "七美鄉", "白沙鄉", "湖西鄉"],
+  "金門縣": ["金沙鎮", "金湖鎮", "金寧鄉", "金城鎮", "烈嶼鄉", "烏坵鄉"],
+  "連江縣": ["南竿鄉", "北竿鄉", "莒光鄉", "東引鄉"]
+};
 
 const REGIONS=["全部","中美洲","南美洲","非洲","太平洋","亞洲","職人精選","精選濾掛"];
 let activeRegion="全部",allData=[],cart=[];
+const qtyMap={};
 
 function parsePrice(raw){
   if(!raw)return{half:"",one:""};
@@ -277,7 +232,6 @@ function buildSizeOptions(d){
   return o.join("");
 }
 
-const qtyMap={};
 function getQty(idx){return qtyMap[idx]||1;}
 function setQty(idx,v){qtyMap[idx]=Math.max(1,v);const el=document.getElementById(`qty-${idx}`);if(el)el.textContent=qtyMap[idx];}
 
@@ -298,9 +252,6 @@ function render(){
       <div class="item-top"><div class="item-name">${d.name}</div>${buildPriceHTML(d)}</div>
       <div class="item-tags">
         <span class="tag process">${d.process}</span>
-        ${d.soldOut?'<span class="tag sold">售完</span>':""}
-        ${d.presale&&!d.soldOut?'<span class="tag presale">預訂制</span>':""}
-        ${d.award?'<span class="tag award">★ 精選</span>':""}
       </div>
       <div class="item-notes">${d.notes}</div>
       ${canAdd?`<div class="add-row">
@@ -310,11 +261,7 @@ function render(){
           <span class="qty-val" id="qty-${idx}">${getQty(idx)}</span>
           <button class="qty-btn" onclick="setQty(${idx},getQty(${idx})+1)">+</button>
         </div>
-        <button class="add-btn" onclick="addToCart(${idx})">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-          加入購物清單
-        </button>
-        <span class="added-label" id="added-${idx}">✓ 已加入</span>
+        <button class="add-btn" onclick="addToCart(${idx})">加入清單</button>
       </div>`:""}
     </div>`;
   }).join("");
@@ -328,8 +275,6 @@ function addToCart(idx){
   const exist=cart.find(c=>c.name===d.name&&c.size===size);
   if(exist){exist.qty+=qty;}else{cart.push({name:d.name,size,price:Number(price),qty});}
   updateCartBadge();
-  const lbl=document.getElementById(`added-${idx}`);
-  if(lbl){lbl.style.display="inline";setTimeout(()=>lbl.style.display="none",1500);}
 }
 
 function removeFromCart(i){cart.splice(i,1);updateCartBadge();renderCartBody();}
@@ -345,9 +290,24 @@ function updateCartBadge(){
 function openCart(){renderCartBody();document.getElementById("overlay").classList.add("show");document.getElementById("cartPanel").classList.add("show");}
 function closeCart(){document.getElementById("overlay").classList.remove("show");document.getElementById("cartPanel").classList.remove("show");}
 
+// 根據縣市更新鄉鎮市區選項
+function updateDistricts() {
+  const city = document.getElementById("f-city").value;
+  const distSelect = document.getElementById("f-district");
+  distSelect.innerHTML = '<option value="">選擇鄉鎮市區</option>';
+  if(city && twCounties[city]) {
+    twCounties[city].forEach(dist => {
+      const opt = document.createElement("option");
+      opt.value = dist;
+      opt.textContent = dist;
+      distSelect.appendChild(opt);
+    });
+  }
+}
+
 function renderCartBody(){
   const el=document.getElementById("cartBody");
-  if(!cart.length){el.innerHTML=`<div class="cart-empty">購物清單是空的<br><span style="font-size:12px">點選豆款旁的「加入購物清單」開始選購</span></div>`;return;}
+  if(!cart.length){el.innerHTML=`<div class="cart-empty">清單是空的</div>`;return;}
   const total=cartTotal();
   el.innerHTML=`
     <div class="cart-items">${cart.map((c,i)=>`
@@ -365,17 +325,53 @@ function renderCartBody(){
       <span class="cart-total-amount">$${total.toLocaleString()}</span>
     </div>
     <div class="order-form">
-      <div class="form-section-title">收件資訊</div>
+      <div class="form-section-title">收件資訊與付款方式</div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">姓名 <span>*</span></label><input class="form-input" id="f-name" type="text" placeholder="您的姓名"></div>
-        <div class="form-group"><label class="form-label">聯絡電話 <span>*</span></label><input class="form-input" id="f-phone" type="tel" placeholder="09xx-xxx-xxx"></div>
+        <div class="form-group"><label class="form-label">姓名</label><input class="form-input" id="f-name" type="text"></div>
+        <div class="form-group"><label class="form-label">電話</label><input class="form-input" id="f-phone" type="tel"></div>
       </div>
-      <div class="form-group"><label class="form-label">Email <span>*</span></label><input class="form-input" id="f-email" type="email" placeholder="your@email.com"></div>
-      <div class="form-group"><label class="form-label">寄送地址 <span>*</span></label><input class="form-input" id="f-addr" type="text" placeholder="縣市、鄉鎮市區、路段門號"></div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="f-email" type="email"></div>
+      
+      <div class="form-group">
+        <label class="form-label">寄送地址</label>
+        <div class="address-row">
+          <select class="form-input" id="f-city" onchange="updateDistricts()" style="flex:1;">
+            <option value="">選擇縣市</option>
+          </select>
+          <select class="form-input" id="f-district" style="flex:1;">
+            <option value="">選擇鄉鎮市區</option>
+          </select>
+        </div>
+        <input class="form-input" id="f-addr-detail" type="text" placeholder="路段、巷弄、門號、樓層">
+      </div>
+      
       <div class="form-group"><label class="form-label">備註</label><input class="form-input" id="f-note" type="text" placeholder="烘焙度偏好、包裝需求…"></div>
-      <button class="submit-btn" onclick="submitOrder()">確認送出訂單</button>
-      <div class="submit-note">送出後我們將透過 Email 與您確認訂單細節與出貨時程</div>
+      
+      <div class="form-group">
+        <label class="form-label">付款方式</label>
+        <div class="payment-options">
+          <label class="payment-option">
+            <input type="radio" name="payment" value="ecpay" checked> 信用卡 / 綠界
+          </label>
+          <label class="payment-option">
+            <input type="radio" name="payment" value="atm"> ATM 匯款
+          </label>
+        </div>
+      </div>
+
+      <button class="submit-btn" onclick="submitOrder()">確認送出</button>
     </div>`;
+
+  // 載入縣市選項
+  const citySelect = document.getElementById("f-city");
+  if(citySelect) {
+    Object.keys(twCounties).forEach(city => {
+      const opt = document.createElement("option");
+      opt.value = city;
+      opt.textContent = city;
+      citySelect.appendChild(opt);
+    });
+  }
 }
 
 function genOrderNo(){
@@ -387,89 +383,88 @@ async function submitOrder(){
   const name=document.getElementById("f-name").value.trim();
   const phone=document.getElementById("f-phone").value.trim();
   const email=document.getElementById("f-email").value.trim();
-  const addr=document.getElementById("f-addr").value.trim();
+  const city=document.getElementById("f-city").value;
+  const dist=document.getElementById("f-district").value;
+  const addrDetail=document.getElementById("f-addr-detail").value.trim();
   const note=document.getElementById("f-note").value.trim();
-  if(!name||!phone||!email||!addr){alert("請填寫姓名、電話、Email 及寄送地址");return;}
+  const paymentMethod=document.querySelector('input[name="payment"]:checked').value;
+  
+  if(!name||!phone||!email||!city||!dist||!addrDetail){alert("基本資料與地址請填寫完整");return;}
 
   const btn=document.querySelector(".submit-btn");
   btn.disabled=true;btn.textContent="處理中…";
 
   const orderNo=genOrderNo();
   const ts=new Date().toLocaleString("zh-TW",{timeZone:"Asia/Taipei"});
+  const addr = city + dist + addrDetail;
   const itemsText=cart.map(c=>`${c.name}（${c.size}×${c.qty}）`).join("、");
   const total=cartTotal();
 
-  // 呼叫 Netlify Function 建立訂單並取得綠界付款參數
-  let ecpayParams = null;
-  let ecpayAction = "";
-
-  try{
-    const res = await fetch(ORDER_API_URL, {
+  // 1. 先把資料往 Google Sheet 送，留存顧客記錄
+  try {
+    await fetch(APPS_SCRIPT_URL, {
       method: "POST",
+      mode: "no-cors",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({orderNo,timestamp:ts,name,phone,email,
-        address:addr,items:itemsText,total,note,status:"待付款"})
+      body: JSON.stringify({
+        orderNo, timestamp: ts, name, phone, email,
+        address: addr, items: itemsText, total, note, 
+        status: paymentMethod === 'atm' ? "待匯款" : "待付款"
+      })
     });
-    const json = await res.json();
-    if(json.status === "ok"){
-      ecpayParams = json.ecpayParams;
-      ecpayAction = json.ecpayAction;
-    }
-  }catch(e){
-    console.warn("Netlify Function呼叫失敗：",e);
+  } catch(e) {
+    console.log("Sheet 寫入失敗", e);
   }
 
   cart=[];updateCartBadge();
 
-  // 如果取得綠界參數，建立隱藏表單直接提交
-  if(ecpayParams && ecpayAction){
+  // 2. 判斷付款方式的後續動作
+  if(paymentMethod === 'atm') {
     document.getElementById("cartBody").innerHTML=`
       <div class="success-panel">
-        <div class="success-icon">✓</div>
         <div class="success-title">訂單已建立！</div>
-        <div class="success-msg">點下方按鈕前往付款<br>付款完成後我們將盡快安排出貨</div>
+        <div class="success-msg">請透過以下帳號進行匯款，完成後請 Email 通知我們後五碼。</div>
+        <div class="bank-info">${BANK_INFO}</div>
         <div class="order-num">訂單編號：${orderNo}</div>
-        <button onclick="submitToEcpay()" style="display:inline-block;margin-top:20px;background:#D4A843;color:#111E4A;border:none;border-radius:10px;padding:14px 32px;font-size:16px;font-weight:500;font-family:'Noto Serif TC',serif;cursor:pointer;width:100%;">前往綠界付款 →</button>
       </div>`;
-
-    // 預先建立隱藏的綠界表單
-    const form = document.createElement("form");
-    form.id = "ecpay-form";
-    form.action = ecpayAction;
-    form.method = "POST";
-    form.style.display = "none";
-    Object.keys(ecpayParams).forEach(k => {
-      const input = document.createElement("input");
-      input.type = "hidden";
-      input.name = k;
-      input.value = ecpayParams[k];
-      form.appendChild(input);
-    });
-    document.body.appendChild(form);
   } else {
-    // 備用：Email 通知
-    const emailSubject = `【肯馬仕新訂單】${orderNo}`;
-    const emailBody = `姓名：${name}\n電話：${phone}\nEmail：${email}\n地址：${addr}\n備註：${note}\n\n品項：${itemsText}\n合計：$${total.toLocaleString()}\n時間：${ts}`;
-    const mailURL = `mailto:canmas13@gmail.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
-    
-    document.getElementById("cartBody").innerHTML=`
-      <div class="success-panel">
-        <div class="success-icon">✓</div>
-        <div class="success-title">訂單已送出！</div>
-        <div class="success-msg">將開啟您的 Email 草稿以便傳送明細<br>我們將盡快與您確認出貨事宜</div>
-        <div class="order-num">訂單編號：${orderNo}</div>
-      </div>`;
-    setTimeout(()=>{ window.location.href = mailURL; closeCart(); }, 1800);
+    // 綠界付款流程
+    try{
+      const res = await fetch(ORDER_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({orderNo,timestamp:ts,name,phone,email,address:addr,items:itemsText,total,note,status:"待付款"})
+      });
+      const json = await res.json();
+      if(json.status === "ok"){
+        document.getElementById("cartBody").innerHTML=`
+          <div class="success-panel">
+            <div class="success-title">訂單已建立！</div>
+            <div class="success-msg">點擊下方按鈕前往綠界安全的付款環境。</div>
+            <button onclick="document.getElementById('ecpay-form').submit()" style="background:#D4A843;color:#111E4A;border:none;border-radius:10px;padding:14px 32px;font-size:16px;cursor:pointer;width:100%;">前往付款</button>
+          </div>`;
+        
+        const form = document.createElement("form");
+        form.id = "ecpay-form";
+        form.action = json.ecpayAction;
+        form.method = "POST";
+        form.style.display = "none";
+        Object.keys(json.ecpayParams).forEach(k => {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = k;
+          input.value = json.ecpayParams[k];
+          form.appendChild(input);
+        });
+        document.body.appendChild(form);
+      }
+    }catch(e){
+      document.getElementById("cartBody").innerHTML=`<div class="success-panel">系統連線稍有延遲，請稍後再試。</div>`;
+    }
   }
 }
 
-function submitToEcpay(){
-  const form=document.getElementById("ecpay-form");
-  if(form) form.submit();
-}
-
 function setTab(r){activeRegion=r;document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.r===r));render();}
-
 function buildTabs(){
   const tabs=document.getElementById("tabs");
   REGIONS.forEach(r=>{
@@ -479,7 +474,6 @@ function buildTabs(){
     tabs.appendChild(t);
   });
 }
-
 function parseCSV(text){
   const lines=text.trim().split("\n");
   const headers=lines[0].split(",").map(h=>h.trim().replace(/^"|"$/g,""));
@@ -491,34 +485,18 @@ function parseCSV(text){
     const pp=parsePrice(obj.price||"");
     return{region:obj.region||"",name:obj.name||"",process:obj.process||"",notes:obj.notes||"",
       half:obj.half||pp.half,one:obj.one||pp.one,
-      soldOut:(obj.soldOut||"").toUpperCase()==="TRUE",
-      presale:(obj.presale||"").toUpperCase()==="TRUE",
-      award:(obj.award||"").toUpperCase()==="TRUE"};
+      soldOut:(obj.soldOut||"").toUpperCase()==="TRUE"};
   }).filter(d=>d.name);
 }
-
 async function init(){
   buildTabs();
-  // 豆單從 Google Sheets CSV 讀取，透過自建 Cloudflare Worker proxy
   const CF_PROXY = "https://canmas-proxy.unikch.workers.dev/?url=";
   if(SHEET_CSV_URL){
     try{
       const res=await fetch(CF_PROXY+encodeURIComponent(SHEET_CSV_URL));
-      if(!res.ok) throw new Error("HTTP "+res.status);
       const text=await res.text();
-      const parsed=parseCSV(text);
-      if(parsed.length>0){
-        allData=parsed;
-        console.log("豆單載入成功，共"+allData.length+"款");
-      }else{
-        throw new Error("資料為空");
-      }
-    }catch(e){
-      console.warn("Cloudflare proxy失敗，使用靜態資料：",e.message);
-      allData=STATIC_DATA;
-    }
-  }else{
-    allData=STATIC_DATA;
+      allData=parseCSV(text);
+    }catch(e){console.warn(e);}
   }
   render();
 }
