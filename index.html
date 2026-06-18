@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>canmas coffee - 精品豆單</title>
+<meta name="description" content="肯馬仕精品咖啡 CANMAS Coffee，竹北預約制精品咖啡bistro，精選世界各地莊園咖啡豆">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Noto+Serif+TC:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -12,8 +13,12 @@
   --bg-1:        #162258;
   --bg-2:        #1A2A6A;
   --bg-3:        #1F3278;
+  --bg-4:        #253C8C;
+  --cobalt:      #1A3FC8;
+  --cobalt-bright:#2952D8;
   --gold:        #D4A843;
   --gold-light:  #EFC76A;
+  --gold-pale:   #F7E9C4;
   --cream:       #EEE8D8;
   --silver:      #B8C8E8;
   --silver-dim:  #6878A8;
@@ -98,7 +103,6 @@ body{background:var(--bg);color:var(--cream);font-family:'Noto Serif TC',serif;m
 .form-label{font-size:13px;color:var(--silver);display:block;margin-bottom:6px;}
 .form-input{width:100%;background:var(--bg-2);border:1px solid var(--border-blue);border-radius:9px;color:var(--cream);font-size:15px;padding:11px 14px;outline:none;font-family:'Noto Serif TC',serif;}
 
-/* 美化下拉選單 */
 select.form-input {
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -173,9 +177,8 @@ const ORDER_API_URL = "/.netlify/functions/order";
 
 // 匯款帳號設定
 const BANK_INFO = `
-銀行代碼：000 (請填寫真實代碼)<br>
-銀行名稱：測試銀行<br>
-帳戶號碼：1234567890<br>
+銀行代碼：006 (合作金庫 六家分行)<br>
+帳戶號碼：3410-7172-16576<br>
 戶名：肯馬仕有限公司
 `;
 
@@ -290,7 +293,6 @@ function updateCartBadge(){
 function openCart(){renderCartBody();document.getElementById("overlay").classList.add("show");document.getElementById("cartPanel").classList.add("show");}
 function closeCart(){document.getElementById("overlay").classList.remove("show");document.getElementById("cartPanel").classList.remove("show");}
 
-// 根據縣市更新鄉鎮市區選項
 function updateDistricts() {
   const city = document.getElementById("f-city").value;
   const distSelect = document.getElementById("f-district");
@@ -362,7 +364,6 @@ function renderCartBody(){
       <button class="submit-btn" onclick="submitOrder()">確認送出</button>
     </div>`;
 
-  // 載入縣市選項
   const citySelect = document.getElementById("f-city");
   if(citySelect) {
     Object.keys(twCounties).forEach(city => {
@@ -400,7 +401,6 @@ async function submitOrder(){
   const itemsText=cart.map(c=>`${c.name}（${c.size}×${c.qty}）`).join("、");
   const total=cartTotal();
 
-  // 1. 先把資料往 Google Sheet 送，留存顧客記錄
   try {
     await fetch(APPS_SCRIPT_URL, {
       method: "POST",
@@ -418,7 +418,6 @@ async function submitOrder(){
 
   cart=[];updateCartBadge();
 
-  // 2. 判斷付款方式的後續動作
   if(paymentMethod === 'atm') {
     document.getElementById("cartBody").innerHTML=`
       <div class="success-panel">
@@ -428,7 +427,6 @@ async function submitOrder(){
         <div class="order-num">訂單編號：${orderNo}</div>
       </div>`;
   } else {
-    // 綠界付款流程
     try{
       const res = await fetch(ORDER_API_URL, {
         method: "POST",
