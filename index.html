@@ -331,10 +331,7 @@ function renderCartBody(){
       <div class="form-section-title">收件資訊與付款方式</div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">姓名<span>* 必填</span></label><input class="form-input" id="f-name" type="text" placeholder="請輸入收件人姓名"></div>
-        <div class="form-group">
-          <label class="form-label">電話<span>* 必填</span></label>
-          <input class="form-input" id="f-phone" type="text" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')" placeholder="請輸入純數字電話號碼">
-        </div>
+        <div class="form-group"><label class="form-label">電話<span>* 必填</span></label><input class="form-input" id="f-phone" type="tel" placeholder="例：0912345678 或 032605030"></div>
       </div>
       <div class="form-group"><label class="form-label">Email<span>* 必填</span></label><input class="form-input" id="f-email" type="email" placeholder="請輸入電子郵件信箱"></div>
       
@@ -386,7 +383,7 @@ function genOrderNo(){
 
 async function submitOrder(){
   const name=document.getElementById("f-name").value.trim();
-  const cleanPhone=document.getElementById("f-phone").value.trim();
+  const rawPhone=document.getElementById("f-phone").value.trim();
   const email=document.getElementById("f-email").value.trim();
   const city=document.getElementById("f-city").value;
   const dist=document.getElementById("f-district").value;
@@ -394,25 +391,39 @@ async function submitOrder(){
   const note=document.getElementById("f-note").value.trim();
   const paymentMethod=document.querySelector('input[name="payment"]:checked').value;
   
-  // 欄位完整性檢查
+  // 基本欄位完整性初步檢查
   if (!name) { alert("請輸入收件人姓名"); document.getElementById("f-name").focus(); return; }
-  if (!cleanPhone) { alert("請輸入聯絡電話"); document.getElementById("f-phone").focus(); return; }
+  if (!rawPhone) { alert("請輸入聯絡電話"); document.getElementById("f-phone").focus(); return; }
   
-  // ── 台灣區域聯絡電話精密格式鑑定 ──
+  // ── 台灣區域聯絡電話精密防呆檢驗機制 ──
+  // 移除使用者可能輸入的減號、空格等符號，純粹精算數字
+  const cleanPhone = rawPhone.replace(/[\s-]/g, ""); 
+  
+  // 檢查是否包含非數字字元
+  if (!/^\d+$/.test(cleanPhone)) {
+    alert("電話號碼必須完全由數字組成，不可包含中文字或英文字母");
+    document.getElementById("f-phone").focus();
+    return;
+  }
+  
+  // 依據台灣常見電話結構進行比對
   if (cleanPhone.startsWith("09")) {
+    // 行動電話鑑定：必須剛好為 10 位數
     if (cleanPhone.length !== 10) {
-      alert("行動電話格式長度不符，應為 10 位純數字（例：0912345678）");
+      alert("您輸入的似乎是手機號碼，台灣的手機號碼必須剛好為 10 位數字（例：0912345678）");
       document.getElementById("f-phone").focus();
       return;
     }
   } else if (cleanPhone.startsWith("0")) {
+    // 市內電話鑑定：區碼 0 開頭，長度通常在 9 到 10 位數之間
     if (cleanPhone.length < 9 || cleanPhone.length > 10) {
-      alert("市內電話格式長度不符，請確認是否包含區域號碼（總長度應為 9-10 位純數字）");
+      alert("您輸入的市內電話格式長度不符，請確認是否包含區域號碼（例：032605030，總長度應為 9-10 位數字）");
       document.getElementById("f-phone").focus();
       return;
     }
   } else {
-    alert("電話號碼必須以 0 開頭（手機為 09，市話包含區域碼為 02、03 等）");
+    // 防呆：開頭非 0 的異常號碼攔截
+    alert("台灣的電話號碼必須以 0 開頭（手機以 09 開頭，市話以區域號碼 02、03 等開頭）");
     document.getElementById("f-phone").focus();
     return;
   }
