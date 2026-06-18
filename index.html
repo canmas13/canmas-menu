@@ -101,6 +101,7 @@ body{background:var(--bg);color:var(--cream);font-family:'Noto Serif TC',serif;m
 .form-section-title{font-size:14px;color:var(--silver-dim);margin-bottom:1.1rem;padding-bottom:8px;border-bottom:1px solid var(--border-soft);}
 .form-group{margin-bottom:14px;}
 .form-label{font-size:13px;color:var(--silver);display:block;margin-bottom:6px;}
+.form-label span{color:var(--danger);font-weight:bold;margin-left:4px;}
 .form-input{width:100%;background:var(--bg-2);border:1px solid var(--border-blue);border-radius:9px;color:var(--cream);font-size:15px;padding:11px 14px;outline:none;font-family:'Noto Serif TC',serif;}
 
 select.form-input {
@@ -194,7 +195,7 @@ const twCounties = {
   "新竹市": ["東區", "北區", "香山區"],
   "嘉義市": ["東區", "西區"],
   "新竹縣": ["竹北市", "湖口鄉", "新豐鄉", "新埔鎮", "關西鎮", "芎林鄉", "寶山鄉", "竹東鎮", "五峰鄉", "橫山鄉", "尖石鄉", "北埔鄉", "峨眉鄉"],
-  "苗栗縣": ["竹南鎮", "頭份市", "三灣鄉", "南庄鄉", "獅潭鄉", "後龍鎮", "通霄鎮", "苑裡鎮", "苗栗市", "造橋鄉", "頭屋鄉", "公館鄉", "大湖鄉", "泰安鄉", "銅鑼鄉", "三義鄉", "西湖鄉", "卓蘭鎮"],
+  "苗栗縣": ["專區", "頭份市", "三灣鄉", "南庄鄉", "獅潭鄉", "後龍鎮", "通霄鎮", "苑裡鎮", "苗栗市", "造橋鄉", "頭屋鄉", "公館鄉", "大湖鄉", "泰安鄉", "銅鑼鄉", "三義鄉", "西湖鄉", "卓蘭鎮"],
   "彰化縣": ["彰化市", "芬園鄉", "花壇鄉", "秀水鄉", "鹿港鎮", "福興鄉", "線西鄉", "和美鎮", "伸港鄉", "員林市", "社頭鄉", "永靖鄉", "埔心鄉", "溪湖鎮", "大村鄉", "埔鹽鄉", "田中鎮", "北斗鎮", "田尾鄉", "埤頭鄉", "溪州鄉", "竹塘鄉", "二林鎮", "大城鄉", "芳苑鄉", "二水鄉"],
   "南投縣": ["南投市", "中寮鄉", "草屯鎮", "國姓鄉", "埔里鎮", "仁愛鄉", "名間鄉", "集集鎮", "水里鄉", "魚池鄉", "信義鄉", "竹山鎮", "鹿谷鄉"],
   "雲林縣": ["斗南鎮", "大埤鄉", "虎尾鎮", "土庫鎮", "褒忠鄉", "東勢鄉", "臺西鄉", "崙背鄉", "麥寮鄉", "斗六市", "林內鄉", "古坑鄉", "莿桐鄉", "西螺鎮", "二崙鄉", "北港鎮", "水林鄉", "口湖鄉", "四湖鄉", "元長鄉"],
@@ -208,7 +209,6 @@ const twCounties = {
   "連江縣": ["南竿鄉", "北竿鄉", "莒光鄉", "東引鄉"]
 };
 
-const REGIONS=["全部","中美洲","南美洲","非洲","太平洋","亞洲","職人精選","精選濾掛"];
 let activeRegion="全部",allData=[],cart=[];
 const qtyMap={};
 
@@ -296,7 +296,7 @@ function closeCart(){document.getElementById("overlay").classList.remove("show")
 function updateDistricts() {
   const city = document.getElementById("f-city").value;
   const distSelect = document.getElementById("f-district");
-  distSelect.innerHTML = '<option value="">選擇鄉鎮市區</option>';
+  distSelect.innerHTML = '<option value="">選擇鄉鎮市區 (必填)</option>';
   if(city && twCounties[city]) {
     twCounties[city].forEach(dist => {
       const opt = document.createElement("option");
@@ -329,28 +329,28 @@ function renderCartBody(){
     <div class="order-form">
       <div class="form-section-title">收件資訊與付款方式</div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">姓名</label><input class="form-input" id="f-name" type="text"></div>
-        <div class="form-group"><label class="form-label">電話</label><input class="form-input" id="f-phone" type="tel"></div>
+        <div class="form-group"><label class="form-label">姓名<span>* 必填</span></label><input class="form-input" id="f-name" type="text" placeholder="請輸入收件人姓名"></div>
+        <div class="form-group"><label class="form-label">電話<span>* 必填</span></label><input class="form-input" id="f-phone" type="tel" placeholder="請輸入聯絡電話"></div>
       </div>
-      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="f-email" type="email"></div>
+      <div class="form-group"><label class="form-label">Email<span>* 必填</span></label><input class="form-input" id="f-email" type="email" placeholder="請輸入電子郵件信箱"></div>
       
       <div class="form-group">
-        <label class="form-label">寄送地址</label>
+        <label class="form-label">寄送地址<span>* 必填</span></label>
         <div class="address-row">
           <select class="form-input" id="f-city" onchange="updateDistricts()" style="flex:1;">
-            <option value="">選擇縣市</option>
+            <option value="">選擇縣市 (必填)</option>
           </select>
           <select class="form-input" id="f-district" style="flex:1;">
-            <option value="">選擇鄉鎮市區</option>
+            <option value="">選擇鄉鎮市區 (必填)</option>
           </select>
         </div>
-        <input class="form-input" id="f-addr-detail" type="text" placeholder="路段、巷弄、門號、樓層">
+        <input class="form-input" id="f-addr-detail" type="text" placeholder="路段、巷弄、門號、樓層 (必填)">
       </div>
       
       <div class="form-group"><label class="form-label">備註</label><input class="form-input" id="f-note" type="text" placeholder="烘焙度偏好、包裝需求…"></div>
       
       <div class="form-group">
-        <label class="form-label">付款方式</label>
+        <label class="form-label">付款方式<span>* 必填</span></label>
         <div class="payment-options">
           <label class="payment-option">
             <input type="radio" name="payment" value="ecpay" checked> 信用卡 / 綠界
@@ -390,7 +390,15 @@ async function submitOrder(){
   const note=document.getElementById("f-note").value.trim();
   const paymentMethod=document.querySelector('input[name="payment"]:checked').value;
   
-  if(!name||!phone||!email||!city||!dist||!addrDetail){alert("基本資料與地址請填寫完整");return;}
+  // ── 收件地址精密防呆檢查機制 ──
+  if (!name) { alert("請輸入收件人姓名"); document.getElementById("f-name").focus(); return; }
+  if (!phone) { alert("請輸入聯絡電話"); document.getElementById("f-phone").focus(); return; }
+  if (!email) { alert("請輸入電子郵件信箱"); document.getElementById("f-email").focus(); return; }
+  
+  if (!city) { alert("請選擇寄送縣市"); document.getElementById("f-city").focus(); return; }
+  if (!dist) { alert("請選擇鄉鎮市區"); document.getElementById("f-district").focus(); return; }
+  if (!addrDetail) { alert("請輸入詳細地址路段與門號"); document.getElementById("f-addr-detail").focus(); return; }
+  if (addrDetail.length < 5) { alert("詳細地址似乎不夠完整，請輸入正確的路段、門號或樓層資訊（至少5個字）"); document.getElementById("f-addr-detail").focus(); return; }
 
   const btn=document.querySelector(".submit-btn");
   btn.disabled=true;btn.textContent="處理中…";
