@@ -417,7 +417,7 @@ async function submitOrder(){
   } else if (cleanPhone.startsWith("0")) {
     // 市內電話鑑定：區碼 0 開頭，長度通常在 9 到 10 位數之間
     if (cleanPhone.length < 9 || cleanPhone.length > 10) {
-      alert("您輸入的市內電話格式長度不符，請確認是否包含區域號碼（例：032605030，總長度應為 9-10 位數字）");
+      alert("您輸入的市話格式長度不符，請確認是否包含區域號碼（例：032605030，總長度應為 9-10 位數字）");
       document.getElementById("f-phone").focus();
       return;
     }
@@ -432,7 +432,7 @@ async function submitOrder(){
   if (!city) { alert("請選擇寄送縣市"); document.getElementById("f-city").focus(); return; }
   if (!dist) { alert("請選擇鄉鎮市區"); document.getElementById("f-district").focus(); return; }
   if (!addrDetail) { alert("請輸入詳細地址路段與門號"); document.getElementById("f-addr-detail").focus(); return; }
-  if (addrDetail.length < 5) { alert("詳細地址似乎不夠完整，請輸入正確的路段、門號或樓層資訊（至少5個字）"); document.getElementById("f-addr-detail").focus(); return; }
+  if (addrDetail.length < 5) { alert("請再檢查地址，輸入正確的路段、門號或樓層資訊（至少5個字）"); document.getElementById("f-addr-detail").focus(); return; }
 
   const btn=document.querySelector(".submit-btn");
   btn.disabled=true;btn.textContent="處理中…";
