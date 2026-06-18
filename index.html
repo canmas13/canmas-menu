@@ -174,7 +174,9 @@ select.form-input {
 // ==========================================
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR7xuhoS9wYuv5_vzG7TzWsQdUjdA7RkwHQJYycnvynDMU0if90IOJEUyLOH-N8Tht6SvLcuwDFtVID/pub?output=csv";
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1HA2LOmb2F7oGXpxDWAQbRBXvBwO9xO5IUzkRCtehw7n_wK2fCX1CttKG32MgUCXb/exec";
-const ORDER_API_URL = "/.netlify/functions/order"; 
+
+// 修正：將相對路徑改為指向你 menu.canmas.com.tw 網域的絕對路徑，確保金流跳轉精準契合
+const ORDER_API_URL = "https://menu.canmas.com.tw/.netlify/functions/order"; 
 
 // 匯款帳號設定
 const BANK_INFO = `
@@ -191,7 +193,7 @@ const twCounties = {
   "臺中市": ["中區", "東區", "南區", "西區", "北區", "北屯區", "西屯區", "南屯區", "太平區", "大里區", "霧峰區", "烏日區", "豐原區", "后里區", "石岡區", "東勢區", "和平區", "新社區", "潭子區", "大雅區", "神岡區", "大肚區", "沙鹿區", "龍井區", "梧棲區", "清水區", "大甲區", "外埔區", "大安區"],
   "臺南市": ["中西區", "東區", "南區", "北區", "安平區", "安南區", "永康區", "歸仁區", "新化區", "左鎮區", "玉井區", "楠西區", "南化區", "仁德區", "關廟區", "龍崎區", "官田區", "麻豆區", "佳里區", "西港區", "七股區", "將軍區", "學甲區", "北門區", "新營區", "後壁區", "白河區", "東山區", "六甲區", "下營區", "柳營區", "鹽水區", "善化區", "大內區", "山上區", "新市區", "安定區"],
   "高雄市": ["新興區", "前金區", "苓雅區", "鹽埕區", "鼓山區", "旗津區", "前鎮區", "三民區", "楠梓區", "小港區", "左營區", "仁武區", "大社區", "東沙群島", "南沙群島", "岡山區", "路竹區", "阿蓮區", "田寮區", "燕巢區", "橋頭區", "梓官區", "彌陀區", "永安區", "湖內區", "鳳山區", "大寮區", "林園區", "鳥松區", "大樹區", "旗山區", "美濃區", "六龜區", "內門區", "杉林區", "甲仙區", "桃源區", "那瑪夏區", "茂林區"],
-  "基隆市": ["仁愛區", "信義區", "中正區", "中山區", "安樂區", "暖暖區", "七堵區"],
+  "基隆市": ["仁愛區", "信義區", "中正區", "中山區", "安樂區", "暖nen區", "七堵區"],
   "新竹市": ["東區", "北區", "香山區"],
   "嘉義市": ["東區", "西區"],
   "新竹縣": ["竹北市", "湖口鄉", "新豐鄉", "新埔鎮", "關西鎮", "芎林鄉", "寶山鄉", "竹東鎮", "五峰鄉", "橫山鄉", "尖石鄉", "北埔鄉", "峨眉鄉"],
@@ -308,6 +310,11 @@ function updateDistricts() {
   }
 }
 
+// 補回：獨立防護電話號碼只能輸入純數字的監聽器，避開 HTML 符號解析隱患
+function filterPhoneNumber(input) {
+  input.value = input.value.replace(/[^0-9]/g, '');
+}
+
 function renderCartBody(){
   const el=document.getElementById("cartBody");
   if(!cart.length){el.innerHTML=`<div class="cart-empty">清單是空的</div>`;return;}
@@ -331,7 +338,10 @@ function renderCartBody(){
       <div class="form-section-title">收件資訊與付款方式</div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">姓名<span>* 必填</span></label><input class="form-input" id="f-name" type="text" placeholder="請輸入收件人姓名"></div>
-        <div class="form-group"><label class="form-label">電話<span>* 必填</span></label><input class="form-input" id="f-phone" type="tel" placeholder="例：0912345678 或 032605030"></div>
+        <div class="form-group">
+          <label class="form-label">電話<span>* 必填</span></label>
+          <input class="form-input" id="f-phone" type="text" inputmode="numeric" oninput="filterPhoneNumber(this)" placeholder="請輸入純數字電話號碼">
+        </div>
       </div>
       <div class="form-group"><label class="form-label">Email<span>* 必填</span></label><input class="form-input" id="f-email" type="email" placeholder="請輸入電子郵件信箱"></div>
       
@@ -383,7 +393,7 @@ function genOrderNo(){
 
 async function submitOrder(){
   const name=document.getElementById("f-name").value.trim();
-  const rawPhone=document.getElementById("f-phone").value.trim();
+  const cleanPhone=document.getElementById("f-phone").value.trim();
   const email=document.getElementById("f-email").value.trim();
   const city=document.getElementById("f-city").value;
   const dist=document.getElementById("f-district").value;
@@ -391,39 +401,23 @@ async function submitOrder(){
   const note=document.getElementById("f-note").value.trim();
   const paymentMethod=document.querySelector('input[name="payment"]:checked').value;
   
-  // 基本欄位完整性初步檢查
   if (!name) { alert("請輸入收件人姓名"); document.getElementById("f-name").focus(); return; }
-  if (!rawPhone) { alert("請輸入聯絡電話"); document.getElementById("f-phone").focus(); return; }
+  if (!cleanPhone) { alert("請輸入聯絡電話"); document.getElementById("f-phone").focus(); return; }
   
-  // ── 台灣區域聯絡電話精密防呆檢驗機制 ──
-  // 移除使用者可能輸入的減號、空格等符號，純粹精算數字
-  const cleanPhone = rawPhone.replace(/[\s-]/g, ""); 
-  
-  // 檢查是否包含非數字字元
-  if (!/^\d+$/.test(cleanPhone)) {
-    alert("電話號碼必須完全由數字組成，不可包含中文字或英文字母");
-    document.getElementById("f-phone").focus();
-    return;
-  }
-  
-  // 依據台灣常見電話結構進行比對
   if (cleanPhone.startsWith("09")) {
-    // 行動電話鑑定：必須剛好為 10 位數
     if (cleanPhone.length !== 10) {
-      alert("您輸入的似乎是手機號碼，台灣的手機號碼必須剛好為 10 位數字（例：0912345678）");
+      alert("行動電話格式長度不符，應為 10 位純數字（例：0912345678）");
       document.getElementById("f-phone").focus();
       return;
     }
   } else if (cleanPhone.startsWith("0")) {
-    // 市內電話鑑定：區碼 0 開頭，長度通常在 9 到 10 位數之間
     if (cleanPhone.length < 9 || cleanPhone.length > 10) {
-      alert("您輸入的市話格式長度不符，請確認是否包含區域號碼（例：032605030，總長度應為 9-10 位數字）");
+      alert("市內電話格式長度不符，請確認是否包含區域號碼（總長度應為 9-10 位純數字）");
       document.getElementById("f-phone").focus();
       return;
     }
   } else {
-    // 防呆：開頭非 0 的異常號碼攔截
-    alert("台灣的電話號碼必須以 0 開頭（手機以 09 開頭，市話以區域號碼 02、03 等開頭）");
+    alert("電話號碼必須以 0 開頭（手機為 09，市話包含區域碼為 02、03 等）");
     document.getElementById("f-phone").focus();
     return;
   }
