@@ -195,7 +195,7 @@ const twCounties = {
   "新竹市": ["東區", "北區", "香山區"],
   "嘉義市": ["東區", "西區"],
   "新竹縣": ["竹北市", "湖口鄉", "新豐鄉", "新埔鎮", "關西鎮", "芎林鄉", "寶山鄉", "竹東鎮", "五峰鄉", "橫山鄉", "尖石鄉", "北埔鄉", "峨眉鄉"],
-  "苗栗縣": ["專區", "頭份市", "三灣鄉", "南庄鄉", "獅潭鄉", "後龍鎮", "通霄鎮", "苑裡鎮", "苗栗市", "造橋鄉", "頭屋鄉", "公館鄉", "大湖鄉", "泰安鄉", "銅鑼鄉", "三義鄉", "西湖鄉", "卓蘭鎮"],
+  "苗栗縣": ["竹南鎮", "頭份市", "三灣鄉", "南庄鄉", "獅潭鄉", "後龍鎮", "通霄鎮", "苑裡鎮", "苗栗市", "造橋鄉", "頭屋鄉", "公館鄉", "大湖鄉", "泰安鄉", "銅鑼鄉", "三義鄉", "西湖鄉", "卓蘭鎮"],
   "彰化縣": ["彰化市", "芬園鄉", "花壇鄉", "秀水鄉", "鹿港鎮", "福興鄉", "線西鄉", "和美鎮", "伸港鄉", "員林市", "社頭鄉", "永靖鄉", "埔心鄉", "溪湖鎮", "大村鄉", "埔鹽鄉", "田中鎮", "北斗鎮", "田尾鄉", "埤頭鄉", "溪州鄉", "竹塘鄉", "二林鎮", "大城鄉", "芳苑鄉", "二水鄉"],
   "南投縣": ["南投市", "中寮鄉", "草屯鎮", "國姓鄉", "埔里鎮", "仁愛鄉", "名間鄉", "集集鎮", "水里鄉", "魚池鄉", "信義鄉", "竹山鎮", "鹿谷鄉"],
   "雲林縣": ["斗南鎮", "大埤鄉", "虎尾鎮", "土庫鎮", "褒忠鄉", "東勢鄉", "臺西鄉", "崙背鄉", "麥寮鄉", "斗六市", "林內鄉", "古坑鄉", "莿桐鄉", "西螺鎮", "二崙鄉", "北港鎮", "水林鄉", "口湖鄉", "四湖鄉", "元長鄉"],
@@ -209,6 +209,7 @@ const twCounties = {
   "連江縣": ["南竿鄉", "北竿鄉", "莒光鄉", "東引鄉"]
 };
 
+const REGIONS=["全部","中美洲","南美洲","非洲","太平洋","亞洲","職人精選","精選濾掛"];
 let activeRegion="全部",allData=[],cart=[];
 const qtyMap={};
 
@@ -330,7 +331,7 @@ function renderCartBody(){
       <div class="form-section-title">收件資訊與付款方式</div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">姓名<span>* 必填</span></label><input class="form-input" id="f-name" type="text" placeholder="請輸入收件人姓名"></div>
-        <div class="form-group"><label class="form-label">電話<span>* 必填</span></label><input class="form-input" id="f-phone" type="tel" placeholder="請輸入聯絡電話"></div>
+        <div class="form-group"><label class="form-label">電話<span>* 必填</span></label><input class="form-input" id="f-phone" type="tel" placeholder="例：0912345678 或 032605030"></div>
       </div>
       <div class="form-group"><label class="form-label">Email<span>* 必填</span></label><input class="form-input" id="f-email" type="email" placeholder="請輸入電子郵件信箱"></div>
       
@@ -382,7 +383,7 @@ function genOrderNo(){
 
 async function submitOrder(){
   const name=document.getElementById("f-name").value.trim();
-  const phone=document.getElementById("f-phone").value.trim();
+  const rawPhone=document.getElementById("f-phone").value.trim();
   const email=document.getElementById("f-email").value.trim();
   const city=document.getElementById("f-city").value;
   const dist=document.getElementById("f-district").value;
@@ -390,11 +391,44 @@ async function submitOrder(){
   const note=document.getElementById("f-note").value.trim();
   const paymentMethod=document.querySelector('input[name="payment"]:checked').value;
   
-  // ── 收件地址精密防呆檢查機制 ──
+  // 基本欄位完整性初步檢查
   if (!name) { alert("請輸入收件人姓名"); document.getElementById("f-name").focus(); return; }
-  if (!phone) { alert("請輸入聯絡電話"); document.getElementById("f-phone").focus(); return; }
-  if (!email) { alert("請輸入電子郵件信箱"); document.getElementById("f-email").focus(); return; }
+  if (!rawPhone) { alert("請輸入聯絡電話"); document.getElementById("f-phone").focus(); return; }
   
+  // ── 台灣區域聯絡電話精密防呆檢驗機制 ──
+  // 移除使用者可能輸入的減號、空格等符號，純粹精算數字
+  const cleanPhone = rawPhone.replace(/[\s-]/g, ""); 
+  
+  // 檢查是否包含非數字字元
+  if (!/^\d+$/.test(cleanPhone)) {
+    alert("電話號碼必須完全由數字組成，不可包含中文字或英文字母");
+    document.getElementById("f-phone").focus();
+    return;
+  }
+  
+  // 依據台灣常見電話結構進行比對
+  if (cleanPhone.startsWith("09")) {
+    // 行動電話鑑定：必須剛好為 10 位數
+    if (cleanPhone.length !== 10) {
+      alert("您輸入的似乎是手機號碼，台灣的手機號碼必須剛好為 10 位數字（例：0912345678）");
+      document.getElementById("f-phone").focus();
+      return;
+    }
+  } else if (cleanPhone.startsWith("0")) {
+    // 市內電話鑑定：區碼 0 開頭，長度通常在 9 到 10 位數之間
+    if (cleanPhone.length < 9 || cleanPhone.length > 10) {
+      alert("您輸入的市內電話格式長度不符，請確認是否包含區域號碼（例：032605030，總長度應為 9-10 位數字）");
+      document.getElementById("f-phone").focus();
+      return;
+    }
+  } else {
+    // 防呆：開頭非 0 的異常號碼攔截
+    alert("台灣的電話號碼必須以 0 開頭（手機以 09 開頭，市話以區域號碼 02、03 等開頭）");
+    document.getElementById("f-phone").focus();
+    return;
+  }
+
+  if (!email) { alert("請輸入電子郵件信箱"); document.getElementById("f-email").focus(); return; }
   if (!city) { alert("請選擇寄送縣市"); document.getElementById("f-city").focus(); return; }
   if (!dist) { alert("請選擇鄉鎮市區"); document.getElementById("f-district").focus(); return; }
   if (!addrDetail) { alert("請輸入詳細地址路段與門號"); document.getElementById("f-addr-detail").focus(); return; }
@@ -415,7 +449,7 @@ async function submitOrder(){
       mode: "no-cors",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        orderNo, timestamp: ts, name, phone, email,
+        orderNo, timestamp: ts, name, phone: cleanPhone, email,
         address: addr, items: itemsText, total, note, 
         status: paymentMethod === 'atm' ? "待匯款" : "待付款"
       })
@@ -439,7 +473,7 @@ async function submitOrder(){
       const res = await fetch(ORDER_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({orderNo,timestamp:ts,name,phone,email,address:addr,items:itemsText,total,note,status:"待付款"})
+        body: JSON.stringify({orderNo,timestamp:ts,name,phone:cleanPhone,email,address:addr,items:itemsText,total,note,status:"待付款"})
       });
       const json = await res.json();
       if(json.status === "ok"){
