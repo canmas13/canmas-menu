@@ -1,5 +1,5 @@
 // netlify/functions/order.js
-// 處理新訂單：寫入 Google Sheets + 產生綠界付款連結
+// 處理新訂單：純粹產生綠界付款連結（Google Sheets 紀錄已由網頁前端統一處理）
 
 const crypto = require("crypto");
 
@@ -8,7 +8,6 @@ const ECPAY_MERCHANT_ID = process.env.ECPAY_MERCHANT_ID;
 const ECPAY_HASH_KEY    = process.env.ECPAY_HASH_KEY;
 const ECPAY_HASH_IV     = process.env.ECPAY_HASH_IV;
 const ECPAY_PRODUCTION  = process.env.ECPAY_PRODUCTION === "true";
-const APPS_SCRIPT_URL   = process.env.APPS_SCRIPT_URL;
 
 const ECPAY_HOST = ECPAY_PRODUCTION
   ? "https://payment.ecpay.com.tw"
@@ -32,16 +31,9 @@ exports.handler = async (event) => {
     const data = JSON.parse(event.body);
     const { orderNo, timestamp, name, phone, email, address, items, total, note } = data;
 
-    // 1. 寫入 Google Sheets（非同步，不等待）
-    if (APPS_SCRIPT_URL) {
-      fetch(APPS_SCRIPT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderNo, timestamp, name, phone, email, address, items, total, note, status: "待付款" })
-      }).catch(e => console.error("Sheets寫入失敗:", e));
-    }
+    // ── 移除原有的重複寫入 Google Sheets 區塊，交由前端網頁單一管道處理 ──
 
-    // 2. 產生綠界付款表單參數
+    // 產生綠界付款表單參數
     const now = new Date();
     const tradeDate = formatDate(now);
     const returnURL = `${process.env.URL}/.netlify/functions/callback`;
@@ -64,11 +56,8 @@ exports.handler = async (event) => {
 
     params.CheckMacValue = computeCheckMac(params);
 
-    // 3. 產生自動提交的 HTML 付款頁面
+    // 產生自動提交的 HTML 付款頁面
     const paymentHTML = buildPaymentHTML(params);
-
-    // 4. 將 HTML 編碼為 Base64 data URL
-    const dataURL = "data:text/html;base64," + Buffer.from(paymentHTML).toString("base64");
 
     return {
       statusCode: 200,
