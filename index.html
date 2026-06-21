@@ -433,16 +433,20 @@ async function submitOrder(){
 
   try {
     // 呼叫 Google Apps Script 寫入訂單並自動寄發 Email
-    await fetch(APPS_SCRIPT_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        orderNo, timestamp: ts, name, phone: cleanPhone, email,
-        address: addr, items: itemsText, total, note, 
-        status: "待匯款"
-      })
-    });
+const res = await fetch(APPS_SCRIPT_URL, {
+  method: "POST",
+  headers: { "Content-Type": "text/plain;charset=utf-8" },
+  body: JSON.stringify({
+    orderNo, timestamp: ts, name, phone: cleanPhone, email,
+    address: addr, items: itemsText, total, note, 
+    status: "待匯款"
+  })
+});
+const result = await res.json();
+console.log("Apps Script 回應：", result);
+if (result.status !== "ok") {
+  throw new Error(result.message || "寫入失敗");
+}
 
     // 成功後清空購物車，顯示匯款資訊
     cart=[];updateCartBadge();
