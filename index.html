@@ -119,7 +119,7 @@ select.form-input {
 .address-row {display:flex; gap:10px; margin-bottom:10px;}
 
 .payment-options { display: flex; gap: 15px; margin-bottom: 15px; }
-.payment-option { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--cream); cursor: pointer; }
+.payment-option { display: flex; align-items: center; gap: 6px; font-size: 15px; color: var(--cream); }
 
 .submit-btn{width:100%;background:var(--gold);color:var(--bg);border:none;border-radius:11px;padding:15px;font-size:16px;font-weight:500;font-family:'Noto Serif TC',serif;cursor:pointer;margin-top:6px;}
 .submit-btn:disabled{opacity:0.45;cursor:not-allowed;}
@@ -174,9 +174,6 @@ select.form-input {
 // ==========================================
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR7xuhoS9wYuv5_vzG7TzWsQdUjdA7RkwHQJYycnvynDMU0if90IOJEUyLOH-N8Tht6SvLcuwDFtVID/pub?output=csv";
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1HA2LOmb2F7oGXpxDWAQbRBXvBwO9xO5IUzkRCtehw7n_wK2fCX1CttKG32MgUCXb/exec";
-
-// 修正：恢復為相對路徑，讓網址無縫接軌你現在的 Netlify 環境
-const ORDER_API_URL = "https://canmasmenu.netlify.app/.netlify/functions/order"; 
 
 // 匯款帳號設定
 const BANK_INFO = `
@@ -360,14 +357,11 @@ function renderCartBody(){
       <div class="form-group"><label class="form-label">備註</label><input class="form-input" id="f-note" type="text" placeholder="烘焙度偏好、包裝需求…"></div>
       
       <div class="form-group">
-        <label class="form-label">付款方式<span>* 必填</span></label>
+        <label class="form-label">付款方式</label>
         <div class="payment-options">
-          <label class="payment-option">
-            <input type="radio" name="payment" value="ecpay" checked> 信用卡 / 綠界
-          </label>
-          <label class="payment-option">
-            <input type="radio" name="payment" value="atm"> ATM 匯款
-          </label>
+          <div class="payment-option">
+            ATM 匯款
+          </div>
         </div>
       </div>
 
@@ -398,7 +392,6 @@ async function submitOrder(){
   const dist=document.getElementById("f-district").value;
   const addrDetail=document.getElementById("f-addr-detail").value.trim();
   const note=document.getElementById("f-note").value.trim();
-  const paymentMethod=document.querySelector('input[name="payment"]:checked').value;
   
   if (!name) { alert("請輸入收件人姓名"); document.getElementById("f-name").focus(); return; }
   if (!cleanPhone) { alert("請輸入聯絡電話"); document.getElementById("f-phone").focus(); return; }
@@ -437,6 +430,7 @@ async function submitOrder(){
   const total=cartTotal();
 
   try {
+    // 呼叫 Google Apps Script 寫入訂單並自動寄發 Email
     await fetch(APPS_SCRIPT_URL, {
       method: "POST",
       mode: "no-cors",
@@ -444,16 +438,12 @@ async function submitOrder(){
       body: JSON.stringify({
         orderNo, timestamp: ts, name, phone: cleanPhone, email,
         address: addr, items: itemsText, total, note, 
-        status: paymentMethod === 'atm' ? "待匯款" : "待付款"
+        status: "待匯款"
       })
     });
-  } catch(e) {
-    console.log("Sheet 寫入失敗", e);
-  }
 
-  cart=[];updateCartBadge();
-
-  if(paymentMethod === 'atm') {
+    // 成功後清空購物車，顯示匯款資訊
+    cart=[];updateCartBadge();
     document.getElementById("cartBody").innerHTML=`
       <div class="success-panel">
         <div class="success-title">訂單已建立！</div>
@@ -461,55 +451,11 @@ async function submitOrder(){
         <div class="bank-info">${BANK_INFO}</div>
         <div class="order-num">訂單編號：${orderNo}</div>
       </div>`;
-  } else {
-    try {
-      const res = await fetch(ORDER_API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({orderNo,timestamp:ts,name,phone:cleanPhone,email,address:addr,items:itemsText,total,note,status:"待付款"})
-      });
       
-      // 核心更新：顯微鏡捕捉伺服器回傳狀態
-      if (!res.ok) {
-        throw new Error(`伺服器無法連線 (狀態碼: ${res.status})`);
-      }
-
-      const json = await res.json();
-      if(json.status === "ok"){
-        document.getElementById("cartBody").innerHTML=`
-          <div class="success-panel">
-            <div class="success-title">訂單已建立！</div>
-            <div class="success-msg">點擊下方按鈕前往綠界安全的付款環境。</div>
-            <button onclick="document.getElementById('ecpay-form').submit()" style="background:#D4A843;color:#111E4A;border:none;border-radius:10px;padding:14px 32px;font-size:16px;cursor:pointer;width:100%;">前往付款</button>
-          </div>`;
-        
-        const form = document.createElement("form");
-        form.id = "ecpay-form";
-        form.action = json.ecpayAction;
-        form.method = "POST";
-        form.style.display = "none";
-        Object.keys(json.ecpayParams).forEach(k => {
-          const input = document.createElement("input");
-          input.type = "hidden";
-          input.name = k;
-          input.value = json.ecpayParams[k];
-          form.appendChild(input);
-        });
-        document.body.appendChild(form);
-      } else {
-        throw new Error(json.message || "加密金流參數失敗");
-      }
-    } catch(e) {
-      // 核心更新：精準印出病因，不再只是模糊的稍後再試
-      document.getElementById("cartBody").innerHTML=`
-        <div class="success-panel">
-          <div class="success-title" style="color:var(--danger)">金流連線發生異常</div>
-          <div class="success-msg" style="text-align:left; background:var(--bg-2); padding:15px; border-radius:8px; line-height:1.6;">
-            錯誤明細：${e.message}<br><br>
-            若顯示「伺服器無法連線 (404)」，代表 Netlify Functions 尚未成功部署，請確認 GitHub 中 <code>netlify/functions/order.js</code> 結構是否正確。
-          </div>
-        </div>`;
-    }
+  } catch(e) {
+    console.log("訂單送出失敗", e);
+    alert("系統連線稍微異常，請稍後再試或直接聯繫我們。");
+    btn.disabled=false;btn.textContent="確認送出";
   }
 }
 
