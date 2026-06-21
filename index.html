@@ -130,6 +130,12 @@ select.form-input {
 .order-num{font-size:13px;color:var(--gold);margin-top:12px;letter-spacing:0.08em;}
 .bank-info { background: var(--bg-2); padding: 15px; border-radius: 8px; text-align: left; font-size: 13px; color: var(--cream); line-height: 1.6; margin-bottom: 15px; border: 1px solid var(--border-blue); }
 
+/* 除錯訊息顯示區：平常隱藏，出錯時顯示 */
+.debug-panel{display:none;background:rgba(224,85,85,0.12);border:1px solid var(--danger);border-radius:9px;padding:13px 14px;margin-top:14px;font-size:12px;color:var(--cream);line-height:1.7;white-space:pre-wrap;word-break:break-all;}
+.debug-panel.show{display:block;}
+.debug-panel .debug-title{color:var(--danger);font-weight:bold;margin-bottom:6px;font-size:13px;}
+.debug-panel .debug-copy{display:inline-block;margin-top:8px;background:transparent;border:1px solid var(--silver-dim);color:var(--silver);border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;}
+
 .footer{padding:2.5rem 1.5rem;text-align:center;max-width:680px;margin:0 auto;}
 .footer-brand{font-size:15px;color:var(--gold);margin-bottom:14px;}
 </style>
@@ -313,6 +319,32 @@ function filterPhoneNumber(input) {
   input.value = input.value.replace(/[^0-9]/g, '');
 }
 
+// ==========================================
+// 除錯訊息顯示（平常隱藏，出錯才顯示在頁面上）
+// ==========================================
+function showDebug(title, detail){
+  const panel=document.getElementById("debugPanel");
+  if(!panel)return;
+  panel.innerHTML = `<div class="debug-title">⚠ ${title}</div>${detail}
+    <button class="debug-copy" onclick="copyDebug()">複製錯誤內容</button>`;
+  panel.dataset.raw = title + "\n" + detail.replace(/<br>/g,"\n");
+  panel.classList.add("show");
+}
+function hideDebug(){
+  const panel=document.getElementById("debugPanel");
+  if(panel){panel.classList.remove("show");panel.innerHTML="";}
+}
+function copyDebug(){
+  const panel=document.getElementById("debugPanel");
+  if(!panel)return;
+  const text=panel.dataset.raw||"";
+  navigator.clipboard.writeText(text).then(()=>{
+    alert("已複製錯誤內容，可貼給技術人員協助排查");
+  }).catch(()=>{
+    alert("複製失敗，請手動截圖");
+  });
+}
+
 function renderCartBody(){
   const el=document.getElementById("cartBody");
   if(!cart.length){el.innerHTML=`<div class="cart-empty">清單是空的</div>`;return;}
@@ -368,6 +400,7 @@ function renderCartBody(){
       </div>
 
       <button class="submit-btn" onclick="submitOrder()">確認送出</button>
+      <div class="debug-panel" id="debugPanel"></div>
     </div>`;
 
   const citySelect = document.getElementById("f-city");
@@ -387,6 +420,8 @@ function genOrderNo(){
 }
 
 async function submitOrder(){
+  hideDebug();
+
   const name=document.getElementById("f-name").value.trim();
   const cleanPhone=document.getElementById("f-phone").value.trim();
   const email=document.getElementById("f-email").value.trim();
@@ -431,22 +466,45 @@ async function submitOrder(){
   const itemsText=cart.map(c=>`${c.name}（${c.size}×${c.qty}）`).join("、");
   const total=cartTotal();
 
-  try {
-    // 呼叫 Google Apps Script 寫入訂單並自動寄發 Email
-const res = await fetch(APPS_SCRIPT_URL, {
-  method: "POST",
-  headers: { "Content-Type": "text/plain;charset=utf-8" },
-  body: JSON.stringify({
+  const payload = {
     orderNo, timestamp: ts, name, phone: cleanPhone, email,
-    address: addr, items: itemsText, total, note, 
+    address: addr, items: itemsText, total, note,
     status: "待匯款"
-  })
-});
-const result = await res.json();
-console.log("Apps Script 回應：", result);
-if (result.status !== "ok") {
-  throw new Error(result.message || "寫入失敗");
-}
+  };
+
+  try {
+    // 重點修正：
+    // 1. 不使用 mode:"no-cors"，才能讀取 Apps Script 真正的回應內容
+    // 2. Content-Type 改為 text/plain，避免瀏覽器發出 CORS preflight (OPTIONS)
+    //    — Apps Script 的 doPost 並不處理 OPTIONS 請求，一旦觸發 preflight 就會失敗
+    //    — Apps Script 端用 JSON.parse(e.postData.contents) 解析的是 body 內容本身，
+    //      不受 Content-Type 標頭影響，所以這樣送資料完全沒問題
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP 狀態碼異常：${res.status} ${res.statusText}`);
+    }
+
+    let result;
+    const rawText = await res.text();
+    try {
+      result = JSON.parse(rawText);
+    } catch (parseErr) {
+      // 回傳的不是預期的 JSON，通常代表部署設定有問題
+      // （例如被導向 Google 登入頁，或執行身分/存取權限設定錯誤）
+      throw new Error(
+        "Apps Script 回應內容無法解析，可能是部署設定問題（請確認「執行身分」為「我」、「具有存取權的使用者」為「所有人」，並重新部署新版本）。原始回應前段內容：" +
+        rawText.slice(0, 300)
+      );
+    }
+
+    if (result.status !== "ok") {
+      throw new Error("Apps Script 回報錯誤：" + (result.message || "未知錯誤"));
+    }
 
     // 成功後清空購物車，顯示匯款資訊
     cart=[];updateCartBadge();
@@ -455,12 +513,16 @@ if (result.status !== "ok") {
         <div class="success-title">訂單已建立！</div>
         <div class="success-msg">請透過以下帳號進行匯款，完成後請 Email 通知我們後五碼。</div>
         <div class="bank-info">${BANK_INFO}</div>
-        <div class="order-num">訂單編號：${orderNo}</div>
+        <div class="order-num">訂單編號：${result.orderNo || orderNo}</div>
       </div>`;
-      
+
   } catch(e) {
     console.log("訂單送出失敗", e);
-    alert("系統連線稍微異常，請稍後再試或直接聯繫我們。");
+    showDebug(
+      "訂單送出失敗，請參考以下原因",
+      String(e.message || e).replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    );
+    alert("系統連線稍微異常，請稍後再試或直接聯繫我們。下方有顯示詳細錯誤原因。");
     btn.disabled=false;btn.textContent="確認送出";
   }
 }
