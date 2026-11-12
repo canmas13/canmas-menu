@@ -130,6 +130,31 @@ select.form-input {
 .order-num{font-size:13px;color:var(--gold);margin-top:12px;letter-spacing:0.08em;}
 .bank-info { background: var(--bg-2); padding: 15px; border-radius: 8px; text-align: left; font-size: 13px; color: var(--cream); line-height: 1.6; margin-bottom: 15px; border: 1px solid var(--border-blue); }
 
+/* 運費與合計明細 */
+.sum-rows{padding:12px 1.5rem;border-top:1px solid var(--border-gold);background:var(--bg-2);}
+.sum-row{display:flex;justify-content:space-between;align-items:baseline;font-size:14px;color:var(--silver);padding:4px 0;}
+.sum-row .free{color:var(--gold-light);}
+.sum-row.grand{margin-top:6px;padding-top:10px;border-top:1px solid var(--border-soft);color:var(--cream);}
+.sum-row.grand .cart-total-amount{font-size:22px;}
+.ship-hint{font-size:12px;color:var(--gold-light);padding:2px 0 4px;text-align:right;}
+
+/* 付款方式選項 */
+.pay-options{display:flex;flex-direction:column;gap:10px;}
+.pay-opt{display:flex;align-items:flex-start;gap:12px;background:var(--bg-2);border:1px solid var(--border-blue);border-radius:10px;padding:13px 14px;cursor:pointer;}
+.pay-opt:has(input:checked){border-color:var(--gold);background:var(--bg-3);}
+.pay-opt input{margin-top:4px;accent-color:var(--gold);}
+.pay-opt b{display:block;font-size:15px;font-weight:500;color:var(--cream);}
+.pay-opt small{display:block;font-size:12px;color:var(--silver-dim);margin-top:3px;line-height:1.6;}
+
+/* 蜜罐欄位（真人看不到，機器人才會填） */
+.hp-field{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;}
+
+/* 付款完成返回提示 */
+.return-banner{background:var(--bg-3);border-bottom:1px solid var(--border-gold);color:var(--cream);font-size:14px;line-height:1.8;padding:14px 1.5rem;text-align:center;}
+.return-banner b{color:var(--gold-light);letter-spacing:0.06em;}
+.return-banner button{background:none;border:none;color:var(--silver-dim);font-size:18px;cursor:pointer;margin-left:10px;}
+.sum-box{background:var(--bg-2);border:1px solid var(--border-blue);border-radius:8px;padding:12px 15px;text-align:left;font-size:13px;color:var(--cream);line-height:1.9;margin-bottom:15px;}
+
 /* 除錯訊息顯示區：平常隱藏，出錯時顯示 */
 .debug-panel{display:none;background:rgba(224,85,85,0.12);border:1px solid var(--danger);border-radius:9px;padding:13px 14px;margin-top:14px;font-size:12px;color:var(--cream);line-height:1.7;white-space:pre-wrap;word-break:break-all;}
 .debug-panel.show{display:block;}
@@ -157,6 +182,7 @@ select.form-input {
   </div>
 </header>
 
+<div class="return-banner" id="returnBanner" style="display:none"></div>
 <div class="tabs-wrap"><div class="tabs" id="tabs"></div></div>
 <div class="count-bar"><div class="count-bar-inner" id="count-bar"></div></div>
 <div class="list" id="list"></div>
@@ -180,15 +206,36 @@ select.form-input {
 // ==========================================
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR7xuhoS9wYuv5_vzG7TzWsQdUjdA7RkwHQJYycnvynDMU0if90IOJEUyLOH-N8Tht6SvLcuwDFtVID/pub?output=csv";
 
-// 這裡換成你剛建立的「新版本」專屬網址了！
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw9ZufNDCZPTnZLNYNAMf_aNedJM_14ZCl86fn965aDZBDFW6Sxzktl1TLSqYXKEUZw/exec";
+// 訂單一律送到後端 create-order（驗證、重算金額、寫入 Sheet、寄信、串綠界都在後端）
+// 在 netlify.app 網域或本機測試時用同源路徑；正式網址 menu.canmas.com.tw 則呼叫 Netlify 上的函式
+const API_BASE = (location.hostname.endsWith(".netlify.app") || location.hostname === "localhost")
+  ? "/.netlify/functions"
+  : "https://canmasmenu.netlify.app/.netlify/functions";
 
-// 匯款帳號設定
-const BANK_INFO = `
-銀行代碼：006 (合作金庫 六家分行)<br>
-帳戶號碼：3410-7172-16576<br>
-戶名：肯馬仕有限公司
-`;
+// 店家設定（運費、免運門檻、匯款帳號）集中放在 shop-config.json，前後端共用
+let SHOP = {
+  brand: { email: "canmas13@gmail.com", phone: "03-260-5030" },
+  shipping: { freeThreshold: 2000, fee: null },
+  bank: null
+};
+async function loadShopConfig(){
+  try{
+    const r = await fetch("shop-config.json", { cache: "no-cache" });
+    if(r.ok) SHOP = Object.assign({}, SHOP, await r.json());
+  }catch(e){ console.warn("shop-config.json 讀取失敗，使用預設值", e); }
+}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function money(n){return "$"+Number(n).toLocaleString();}
+// 未達免運門檻回傳運費；運費尚未設定時回傳 null
+function shippingFor(sub){
+  if(sub>=SHOP.shipping.freeThreshold) return 0;
+  return Number.isInteger(SHOP.shipping.fee) ? SHOP.shipping.fee : null;
+}
+function bankHTML(){
+  const b = SHOP.bank;
+  if(!b) return "";
+  return `銀行代碼：${esc(b.code)} (${esc(b.name)} ${esc(b.branch)})<br>帳戶號碼：${esc(b.account)}<br>戶名：${esc(b.holder)}`;
+}
 
 // 台灣行政區資料庫
 const twCounties = {
@@ -348,7 +395,14 @@ function copyDebug(){
 function renderCartBody(){
   const el=document.getElementById("cartBody");
   if(!cart.length){el.innerHTML=`<div class="cart-empty">清單是空的</div>`;return;}
-  const total=cartTotal();
+  const sub=cartTotal();
+  const ship=shippingFor(sub);
+  const grand=sub+(ship||0);
+  const gap=SHOP.shipping.freeThreshold-sub;
+  const shipRow = ship===0
+    ? `<span class="free">免運費</span>`
+    : ship===null ? `<span>—</span>` : `<span>${money(ship)}</span>`;
+  const shipHint = gap>0 ? `<div class="ship-hint">再購 ${money(gap)} 即享免運</div>` : "";
   el.innerHTML=`
     <div class="cart-items">${cart.map((c,i)=>`
       <div class="cart-item">
@@ -360,9 +414,11 @@ function renderCartBody(){
         <button class="cart-item-remove" onclick="removeFromCart(${i})">×</button>
       </div>`).join("")}
     </div>
-    <div class="cart-total">
-      <span class="cart-total-label">合計（未含運費）</span>
-      <span class="cart-total-amount">$${total.toLocaleString()}</span>
+    <div class="sum-rows">
+      <div class="sum-row"><span>商品小計</span><span>${money(sub)}</span></div>
+      <div class="sum-row"><span>運費（滿 ${money(SHOP.shipping.freeThreshold)} 免運）</span>${shipRow}</div>
+      ${shipHint}
+      <div class="sum-row grand"><span class="cart-total-label">應付總額</span><span class="cart-total-amount">${money(grand)}</span></div>
     </div>
     <div class="order-form">
       <div class="form-section-title">收件資訊與付款方式</div>
@@ -392,12 +448,13 @@ function renderCartBody(){
       
       <div class="form-group">
         <label class="form-label">付款方式</label>
-        <div class="payment-options">
-          <div class="payment-option">
-            ATM 匯款
-          </div>
+        <div class="pay-options">
+          <label class="pay-opt"><input type="radio" name="pay" value="atm" checked onchange="updateSubmitLabel()"><span><b>ATM／銀行匯款</b><small>送出後會 Email 匯款資訊給您，匯款完成請回覆帳號後五碼</small></span></label>
+          <label class="pay-opt"><input type="radio" name="pay" value="card" onchange="updateSubmitLabel()"><span><b>信用卡</b><small>前往綠界科技安全付款頁刷卡，付款成功後自動確認</small></span></label>
         </div>
       </div>
+
+      <div class="hp-field" aria-hidden="true"><label>請勿填寫<input type="text" id="f-hp" tabindex="-1" autocomplete="off"></label></div>
 
       <button class="submit-btn" onclick="submitOrder()">確認送出</button>
       <div class="debug-panel" id="debugPanel"></div>
@@ -412,11 +469,6 @@ function renderCartBody(){
       citySelect.appendChild(opt);
     });
   }
-}
-
-function genOrderNo(){
-  const d=new Date();
-  return`CM${d.getFullYear().toString().slice(2)}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}-${String(Math.floor(Math.random()*9000)+1000)}`;
 }
 
 async function submitOrder(){
@@ -458,62 +510,58 @@ async function submitOrder(){
   if (addrDetail.length < 5) { alert("請再檢查地址，輸入正確的路段、門號或樓層資訊（至少5個字）"); document.getElementById("f-addr-detail").focus(); return; }
 
   const btn=document.querySelector(".submit-btn");
+  const method=(document.querySelector('input[name="pay"]:checked')||{}).value||"atm";
+  const idleLabel=method==="card"?"前往付款":"確認送出";
   btn.disabled=true;btn.textContent="處理中…";
 
-  const orderNo=genOrderNo();
-  const ts=new Date().toLocaleString("zh-TW",{timeZone:"Asia/Taipei"});
-  const addr = city + dist + addrDetail;
-  const itemsText=cart.map(c=>`${c.name}（${c.size}×${c.qty}）`).join("、");
-  const total=cartTotal();
-
+  // 金額、訂單編號都由後端決定；這裡只送「品名、規格、數量」與客人資料
   const payload = {
-    orderNo, timestamp: ts, name, phone: cleanPhone, email,
-    address: addr, items: itemsText, total, note,
-    status: "待匯款"
+    paymentMethod: method,
+    customer: { name, phone: cleanPhone, email, city, district: dist, addressDetail: addrDetail, note },
+    items: cart.map(c=>({ name: c.name, size: c.size, qty: c.qty })),
+    hp: (document.getElementById("f-hp")||{}).value || ""
   };
 
   try {
-    // 重點修正：
-    // 1. 不使用 mode:"no-cors"，才能讀取 Apps Script 真正的回應內容
-    // 2. Content-Type 改為 text/plain，避免瀏覽器發出 CORS preflight (OPTIONS)
-    //    — Apps Script 的 doPost 並不處理 OPTIONS 請求，一旦觸發 preflight 就會失敗
-    //    — Apps Script 端用 JSON.parse(e.postData.contents) 解析的是 body 內容本身，
-    //      不受 Content-Type 標頭影響，所以這樣送資料完全沒問題
-    const res = await fetch(APPS_SCRIPT_URL, {
+    const res = await fetch(API_BASE + "/create-order", {
       method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
-
-    if (!res.ok) {
-      throw new Error(`HTTP 狀態碼異常：${res.status} ${res.statusText}`);
-    }
-
-    let result;
     const rawText = await res.text();
-    try {
-      result = JSON.parse(rawText);
-    } catch (parseErr) {
-      // 回傳的不是預期的 JSON，通常代表部署設定有問題
-      // （例如被導向 Google 登入頁，或執行身分/存取權限設定錯誤）
-      throw new Error(
-        "Apps Script 回應內容無法解析，可能是部署設定問題（請確認「執行身分」為「我」、「具有存取權的使用者」為「所有人」，並重新部署新版本）。原始回應前段內容：" +
-        rawText.slice(0, 300)
-      );
-    }
+    let result;
+    try { result = JSON.parse(rawText); }
+    catch (parseErr) { throw new Error(`伺服器回應無法解析（HTTP ${res.status}）：` + rawText.slice(0, 200)); }
+    if (!res.ok || result.status !== "ok") throw new Error(result.message || `HTTP ${res.status}`);
 
-    if (result.status !== "ok") {
-      throw new Error("Apps Script 回報錯誤：" + (result.message || "未知錯誤"));
-    }
-
-    // 成功後清空購物車，顯示匯款資訊
     cart=[];updateCartBadge();
+
+    if (result.paymentMethod === "card" && result.ecpay) {
+      document.getElementById("cartBody").innerHTML=`
+        <div class="success-panel">
+          <div class="success-title">正在前往綠界付款頁…</div>
+          <div class="success-msg">請在付款頁完成信用卡付款。<br>付款成功後，確認信會寄到 ${esc(email)}。</div>
+          <div class="order-num">訂單編號：${esc(result.orderNo)}</div>
+        </div>`;
+      postToEcpay(result.ecpay);
+      return;
+    }
+
+    const mailLine = result.email === "sent"
+      ? `訂單明細與匯款資訊已寄到 <b>${esc(email)}</b>，請查收（若沒看到，請檢查垃圾郵件匣）。`
+      : `訂單已建立，但確認信可能延遲寄出；請先依下方資訊匯款，若稍後仍未收到信，請聯絡我們。`;
     document.getElementById("cartBody").innerHTML=`
       <div class="success-panel">
         <div class="success-title">訂單已建立！</div>
-        <div class="success-msg">請透過以下帳號進行匯款，完成後請 Email 通知我們後五碼。</div>
-        <div class="bank-info">${BANK_INFO}</div>
-        <div class="order-num">訂單編號：${result.orderNo || orderNo}</div>
+        <div class="success-msg">${mailLine}</div>
+        <div class="sum-box">
+          商品小計：${money(result.subtotal)}<br>
+          運費：${result.shipping>0?money(result.shipping):"免運費"}<br>
+          <b>應匯金額：${money(result.total)}</b>
+        </div>
+        <div class="success-msg">請透過以下帳號匯款，完成後請回覆確認信（或 Email 我們）告知<b>帳號後五碼</b>。</div>
+        <div class="bank-info">${bankHTML()}</div>
+        <div class="order-num">訂單編號：${esc(result.orderNo)}</div>
       </div>`;
 
   } catch(e) {
@@ -522,9 +570,39 @@ async function submitOrder(){
       "訂單送出失敗，請參考以下原因",
       String(e.message || e).replace(/</g,"&lt;").replace(/>/g,"&gt;")
     );
-    alert("系統連線稍微異常，請稍後再試或直接聯繫我們。下方有顯示詳細錯誤原因。");
-    btn.disabled=false;btn.textContent="確認送出";
+    alert("訂單未能送出，下方有顯示原因。您可以稍後再試，或直接聯繫我們。");
+    btn.disabled=false;btn.textContent=idleLabel;
   }
+}
+
+// 以表單 POST 前往綠界付款頁（綠界只接受表單 POST）
+function postToEcpay(ecpay){
+  const form=document.createElement("form");
+  form.method="POST";
+  form.action=ecpay.action;
+  form.acceptCharset="UTF-8";
+  Object.keys(ecpay.params).forEach(k=>{
+    const input=document.createElement("input");
+    input.type="hidden";input.name=k;input.value=ecpay.params[k];
+    form.appendChild(input);
+  });
+  document.body.appendChild(form);
+  form.submit();
+}
+
+function updateSubmitLabel(){
+  const btn=document.querySelector(".submit-btn");
+  const method=(document.querySelector('input[name="pay"]:checked')||{}).value;
+  if(btn&&!btn.disabled) btn.textContent = method==="card" ? "前往付款" : "確認送出";
+}
+
+// 從綠界「返回商店」回來時顯示提示（付款結果以確認信為準）
+function showReturnBanner(){
+  const q=new URLSearchParams(location.search).get("order");
+  if(!q||!/^CM[0-9A-Z]{6,}$/.test(q)) return;
+  const el=document.getElementById("returnBanner");
+  el.innerHTML=`感謝您的訂購！訂單 <b>${esc(q)}</b> 已收到。<br>付款成功後，確認信會寄到您填寫的 Email；若數分鐘後仍未收到，請來信或來電 ${esc(SHOP.brand.phone)}。<button onclick="this.parentNode.style.display='none'" aria-label="關閉">×</button>`;
+  el.style.display="block";
 }
 
 function setTab(r){activeRegion=r;document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.r===r));render();}
@@ -553,6 +631,7 @@ function parseCSV(text){
 }
 async function init(){
   buildTabs();
+  const cfgReady = loadShopConfig().then(showReturnBanner);
   const CF_PROXY = "https://canmas-proxy.unikch.workers.dev/?url=";
   if(SHEET_CSV_URL){
     try{
@@ -562,6 +641,7 @@ async function init(){
     }catch(e){console.warn(e);}
   }
   render();
+  await cfgReady;
 }
 init();
 </script>

@@ -1,0 +1,17 @@
+{
+  "name": "canmas-menu",
+  "version": "2.0.0",
+  "private": true,
+  "description": "CANMAS COFFEE 精品豆單訂購網站（靜態前端 + Netlify Functions）",
+  "scripts": {
+    "test": "node --test",
+    "preview:email": "node scripts/preview-email.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^10.7.13",
+    "nodemailer": "^10.5.0"
+  }
+}
