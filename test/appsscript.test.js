@@ -70,9 +70,9 @@ function makeEnv({ secret, seed = {} } = {}) {
 const order = {
   orderNo: "CM261113ABCDE", timestamp: "2026/11/13 上午 9:50:00", name: "王小明", phone: "0912345678",
   email: " a@b.co ", address: "新竹縣竹北市鳳岡路二段502號", items: "耶加雪菲（半磅×2）、運費 $80", total: 1040,
-  note: '=HYPERLINK("http://x")', status: "待付款（信用卡）", paymentMethod: "信用卡",
+  note: '=HYPERLINK("http://x")', status: "待匯款", paymentMethod: "ATM匯款",
 };
-const paid = (extra = {}) => ({ ...order, action: "updateOrder", status: "✅ 已付款（信用卡）", paymentType: "信用卡", paidAt: "2026/11/13 上午 9:55:10", ...extra });
+const paid = (extra = {}) => ({ ...order, action: "updateOrder", status: "✅ 已付款（信用卡）", paymentMethod: "", paymentType: "信用卡", paidAt: "2026/11/13 上午 9:55:10", ...extra });
 
 // 模擬 David 現有的試算表：10 欄表頭、舊資料（電話被試算表吃掉開頭 0 變成數字）
 function legacySeed() {
@@ -95,8 +95,8 @@ test("全新試算表：建立兩個分頁與表頭，訂單與顧客各寫一�
   assert.equal(row[4], "a@b.co"); // Email 去頭尾空白
   assert.equal(row[7], 1040);
   assert.equal(row[8], '=HYPERLINK("http://x")');
-  assert.equal(row[9], "待付款（信用卡）");
-  assert.equal(row[10], "信用卡");
+  assert.equal(row[9], "待匯款");
+  assert.equal(row[10], "ATM匯款");
   assert.equal(o.formats[1][3], "@");
   assert.equal(o.formats[1][8], "@"); // 備註為純文字，不會被當公式
   assert.equal(o.formats[1][7], "0");
@@ -233,6 +233,52 @@ test("doGet 健康檢查不碰試算表；testPost 可執行且寫入一筆", ()
   assert.equal(Object.keys(e.sheets).length, 0);
   e.ctx.testPost();
   assert.equal(e.sheets["訂單記錄"].grid[1][0], "CM-TEST-261113-100000");
+});
+
+// 台灣時間字串（與 Netlify 寫入格式相同），hoursAgo 小時前
+const twAgo = (hoursAgo) => {
+  const d = new Date(Date.now() - hoursAgo * 3600e3 + 8 * 3600e3);
+  const p = (n) => String(n).padStart(2, "0");
+  return `${d.getUTCFullYear()}/${p(d.getUTCMonth() + 1)}/${p(d.getUTCDate())} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}`;
+};
+const card = { ...order, orderNo: "CMCARD1", status: "待付款（信用卡）", paymentMethod: "信用卡" };
+
+test("信用卡單：建單時不計入顧客，付款成功才建檔計入", () => {
+  const e = makeEnv();
+  e.post(card);
+  assert.equal(e.sheets["訂單記錄"].grid[1][9], "待付款（信用卡）");
+  assert.equal(e.sheets["顧客資料"], undefined);
+  e.post({ ...card, action: "updateOrder", status: "✅ 已付款（信用卡）", paidAt: "x", paymentType: "信用卡" });
+  const c = e.sheets["顧客資料"].grid[1];
+  assert.deepEqual([c[1], c[2], c[7], c[8]], ["王小明", "0912345678", 1, 1040]);
+  e.post({ ...card, action: "updateOrder", status: "✅ 已付款（信用卡）" }); // 綠界重送
+  assert.equal(e.sheets["顧客資料"].grid[1][7], 1);
+});
+
+test("逾時：超過 2 小時未付款的信用卡單標為取消；未逾時、ATM、已付款的不動；之後收到付款仍會改為已付款並計入", () => {
+  const e = makeEnv();
+  e.post({ ...card, orderNo: "OLD", timestamp: twAgo(3) });
+  e.post({ ...card, orderNo: "NEW", timestamp: twAgo(0.5) });
+  e.post({ ...card, orderNo: "PAID", timestamp: twAgo(5) });
+  e.post({ ...card, orderNo: "PAID", action: "updateOrder", status: "✅ 已付款（信用卡）" });
+  e.post({ ...order, orderNo: "ATM", timestamp: twAgo(10) });
+  e.post({ ...card, orderNo: "AMPM", timestamp: "2026/1/2 下午 1:05:00" });
+  assert.equal(e.ctx.expireStaleCardOrders(), 2);
+  const st = Object.fromEntries(e.sheets["訂單記錄"].grid.slice(1).map((r) => [r[0], r[9]]));
+  assert.deepEqual(st, { OLD: "⌛ 逾時未付款（已取消）", NEW: "待付款（信用卡）", PAID: "✅ 已付款（信用卡）", ATM: "待匯款", AMPM: "⌛ 逾時未付款（已取消）" });
+  assert.equal(e.ctx.expireStaleCardOrders(), 0); // 重跑不重複處理
+  const before = e.sheets["顧客資料"].grid[1][7];
+  e.post({ ...card, orderNo: "OLD", action: "updateOrder", status: "✅ 已付款（信用卡）" });
+  assert.equal(e.sheets["訂單記錄"].grid[1][9], "✅ 已付款（信用卡）");
+  assert.equal(e.sheets["顧客資料"].grid[1][7], before + 1);
+});
+
+test("時間解析：Netlify 與舊腳本兩種格式", () => {
+  const e = makeEnv();
+  assert.equal(e.ctx.parseTw_("2026/11/13 16:24"), Date.UTC(2026, 10, 13, 8, 24));
+  assert.equal(e.ctx.parseTw_("2026/6/21 下午 5:09:10"), Date.UTC(2026, 5, 21, 9, 9, 10));
+  assert.equal(e.ctx.parseTw_("2026/6/21 上午 12:05:00"), Date.UTC(2026, 5, 20, 16, 5));
+  assert.equal(e.ctx.parseTw_("亂寫"), 0);
 });
 
 test("Netlify 端：有設 APPS_SCRIPT_SECRET 時請求會附上 secret；沒設則不附", async () => {

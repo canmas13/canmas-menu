@@ -91,18 +91,20 @@ function makeHandler(deps = defaultDeps) {
         }
       }
 
-      // 寫入 Google Sheet 與寄信給店主同時進行；只要其中一個成功，訂單就不會遺失
-      const ownerMail = renderOwnerEmail(order, deps.shop);
+      // 寫入 Google Sheet 與寄信給店主同時進行；只要其中一個成功，訂單就不會遺失。
+      // 信用卡：客人可能放棄付款，所以建單時不通知店主，付款成功後才由 callback 通知（訂單已暫存，不會遺失）
+      const isCard = paymentMethod === "card";
+      const ownerMail = isCard ? null : renderOwnerEmail(order, deps.shop);
       const [sheetRes, ownerRes] = await Promise.allSettled([
         deps.sheetAppend(toSheetRow(order, order.status)),
-        deps.sendMail({ to: notifyEmail(), subject: ownerMail.subject, html: ownerMail.html, text: ownerMail.text }),
+        isCard ? Promise.resolve("skipped") : deps.sendMail({ to: notifyEmail(), subject: ownerMail.subject, html: ownerMail.html, text: ownerMail.text }),
       ]);
       if (sheetRes.status === "rejected") console.error("寫入 Google Sheet 失敗", orderNo, sheetRes.reason);
       if (ownerRes.status === "rejected") console.error("寄訂單通知給店主失敗", orderNo, ownerRes.reason);
-      if (sheetRes.status === "rejected" && ownerRes.status === "rejected") {
+      if (!isCard && sheetRes.status === "rejected" && ownerRes.status === "rejected") {
         throw new Error("Sheet 與店主通知信都失敗，訂單 " + orderNo + " 未能送達店家");
       }
-      order.notified.owner = ownerRes.status === "fulfilled";
+      order.notified.owner = !isCard && ownerRes.status === "fulfilled";
 
       // ATM：立刻寄訂單確認＋匯款資訊給客人；信用卡：付款成功後才由 callback 寄
       let emailStatus = "pending";

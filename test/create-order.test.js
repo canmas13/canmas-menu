@@ -44,7 +44,7 @@ test("滿額免運（2640）：運費為 0", async () => {
   assert.deepEqual([body.subtotal, body.shipping, body.total], [2640, 0, 2640]);
 });
 
-test("信用卡下單：回傳可通過驗章的綠界表單、只寄店主、不寄客人（付款成功後才寄）", async () => {
+test("信用卡下單：回傳可通過驗章的綠界表單；店主與客人都等付款成功才寄", async () => {
   const ctx = makeDeps();
   const { res, body } = await call(ctx, { paymentMethod: "card", customer, items: items1 });
   assert.equal(res.statusCode, 200);
@@ -59,10 +59,11 @@ test("信用卡下單：回傳可通過驗章的綠界表單、只寄店主、�
   assert.ok(verifyCheckMacValue(p, STAGE.hashKey, STAGE.hashIV));
   assert.ok(!("OrderResultURL" in p));
 
-  assert.equal(ctx.sent.length, 1);
-  assert.equal(ctx.sent[0].to, "canmas13@gmail.com");
+  assert.equal(ctx.sent.length, 0);
   assert.equal(ctx.sheetRows[0].status, "待付款（信用卡）");
-  assert.equal((await ctx.store.get("order:CM261112K7Q2M")).paid, false);
+  const saved = await ctx.store.get("order:CM261112K7Q2M");
+  assert.equal(saved.paid, false);
+  assert.equal(saved.notified.owner, false); // callback 付款成功時會通知店主
 });
 
 test("欄位驗證：缺資料、電話格式、Email 格式、付款方式", async () => {

@@ -12,7 +12,8 @@
  *   3. 電話一律以純文字寫入，保留開頭的 0；顧客比對時會把「912345678」與「0912345678」視為同一支電話，
  *      不會再為同一位客人重複建檔。
  *   4. 同一訂單編號重複送來（網路重送）只寫一次。
- *   5. 付款失敗時，顧客的累計訂單數／消費金額會扣回；之後同一筆付款成功再加回。
+ *   5. 顧客累計：ATM 下單即計入；信用卡付款成功才計入。付款失敗／取消扣回，之後付款成功再加回。
+ *   6. expireStaleCardOrders()（設每小時觸發）：信用卡單超過 2 小時未付款自動標為「逾時未付款（已取消）」。
  *
  * 由 Netlify 後端呼叫（POST，Content-Type: text/plain，內容為 JSON）：
  *   - 新訂單：{ orderNo, timestamp, name, phone, email, address, items, total, note, status, paymentMethod, ... }
@@ -74,6 +75,27 @@ function normPhone_(v) {
 
 function isFailed_(status) {
   return /❌|失敗|取消/.test(String(status || ''));
+}
+
+// 這筆訂單是否計入顧客累計：信用卡要付款成功才算；ATM／舊資料下單即算，被取消或失敗則不算
+function counts_(status, method) {
+  if (String(method || '') === '信用卡') return /已付款/.test(String(status || ''));
+  return !isFailed_(status);
+}
+
+// 信用卡單建立後超過這麼多小時仍未付款，自動標為逾時取消（綠界付款頁已失效）
+var CARD_EXPIRE_HOURS = 2;
+var EXPIRED_STATUS = '⌛ 逾時未付款（已取消）';
+
+// 解析「2026/11/13 16:24」「2026/11/13 下午 4:24:10」等台灣時間字串，回傳毫秒；無法解析回傳 0
+function parseTw_(v) {
+  if (v instanceof Date) return v.getTime();
+  var m = String(v || '').match(/(\d{4})\/(\d{1,2})\/(\d{1,2})\D*?(上午|下午)?\s*(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  if (!m) return 0;
+  var h = Number(m[5]);
+  if (m[4] === '下午' && h < 12) h += 12;
+  if (m[4] === '上午' && h === 12) h = 0;
+  return Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]), h - 8, Number(m[6]), Number(m[7] || 0));
 }
 
 function getOrderSheet_(ss) {
@@ -211,9 +233,16 @@ function adjustCustomer_(ss, phone, delta, total) {
   sheet.getRange(found.row, 9).setValues([[Math.max(0, (Number(v[8]) || 0) + delta * (Number(total) || 0))]]);
 }
 
+function rowData_(values) {
+  var d = {};
+  ORDER_COLS.forEach(function (c, i) { d[c[0]] = values[i]; });
+  return d;
+}
+
 function updateOrder_(ss, sheet, row, data) {
   var prev = sheet.getRange(row, 1, 1, ORDER_COLS.length).getValues()[0];
   var prevStatus = prev[orderCol_('status') - 1];
+  var prevMethod = prev[orderCol_('paymentMethod') - 1] || data.paymentMethod;
 
   if (data.status) setText_(sheet, row, 'status', data.status);
   if (data.paymentMethod) setText_(sheet, row, 'paymentMethod', data.paymentMethod);
@@ -221,12 +250,45 @@ function updateOrder_(ss, sheet, row, data) {
   if (data.paymentType) setText_(sheet, row, 'paymentType', data.paymentType);
 
   if (data.status) {
-    var wasFailed = isFailed_(prevStatus);
-    var nowFailed = isFailed_(data.status);
-    var phone = prev[orderCol_('phone') - 1] || data.phone;
-    var total = Number(prev[orderCol_('total') - 1]) || Number(data.total) || 0;
-    if (nowFailed && !wasFailed) adjustCustomer_(ss, phone, -1, total);
-    else if (!nowFailed && wasFailed) adjustCustomer_(ss, phone, 1, total);
+    var method = data.paymentMethod || prevMethod;
+    var wasCounted = counts_(prevStatus, prevMethod);
+    var nowCounted = counts_(data.status, method);
+    var d = rowData_(prev);
+    var phone = d.phone || data.phone;
+    var total = Number(d.total) || Number(data.total) || 0;
+    if (nowCounted && !wasCounted) {
+      // 信用卡付款成功（或逾時取消後又收到付款）：此時才建檔／計入顧客
+      upsertCustomer_(ss, { name: d.name || data.name, phone: phone, email: d.email || data.email, address: d.address || data.address, total: total });
+    } else if (wasCounted && !nowCounted) {
+      adjustCustomer_(ss, phone, -1, total);
+    }
+  }
+}
+
+// 排程（每小時）：把逾時未付款的信用卡單標為取消。也可在編輯器手動執行。
+function expireStaleCardOrders() {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    var sheet = getOrderSheet_(SpreadsheetApp.openById(SPREADSHEET_ID));
+    var last = sheet.getLastRow();
+    if (last < 2) return 0;
+    var vals = sheet.getRange(2, 1, last - 1, ORDER_COLS.length).getValues();
+    var now = Date.now();
+    var n = 0;
+    for (var i = 0; i < vals.length; i++) {
+      var d = rowData_(vals[i]);
+      if (String(d.paymentMethod) !== '信用卡' || !/^待付款/.test(String(d.status))) continue;
+      var t = parseTw_(d.timestamp);
+      if (t && now - t > CARD_EXPIRE_HOURS * 3600 * 1000) {
+        setText_(sheet, i + 2, 'status', EXPIRED_STATUS);
+        n++;
+      }
+    }
+    Logger.log('標為逾時取消：' + n + ' 筆');
+    return n;
+  } finally {
+    try { lock.releaseLock(); } catch (ignore) {}
   }
 }
 
@@ -250,13 +312,13 @@ function doPost(e) {
       if (row < 0) {
         // 找不到原訂單（例如下單時寫入失敗）：把這筆當新資料補寫，不要遺失付款紀錄
         appendOrder_(sheet, data);
-        upsertCustomer_(ss, data);
+        if (counts_(data.status, data.paymentMethod)) upsertCustomer_(ss, data);
       } else {
         updateOrder_(ss, sheet, row, data);
       }
     } else if (row < 0) {
       appendOrder_(sheet, data);
-      upsertCustomer_(ss, data);
+      if (counts_(data.status, data.paymentMethod)) upsertCustomer_(ss, data);
       if (isLegacyRequest_(data)) sendLegacyMails_(data);
     } // 同一訂單編號重複送來：視為重送，不重複寫入（也不重複寄信）
 
