@@ -33,7 +33,7 @@ async function sendViaGmail({ to, subject, html, text, replyTo, from }) {
     host: "smtp.gmail.com",
     port: 465,
     secure: true,
-    auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD },
+    auth: { user: process.env.GMAIL_USER.trim(), pass: process.env.GMAIL_APP_PASSWORD.replace(/\s+/g, "") }, // Google 顯示的 16 碼帶空格，貼上時常一起帶入
   });
   const info = await transport.sendMail({ from, to, subject, html, text, replyTo });
   return { provider: "gmail", response: info.messageId };

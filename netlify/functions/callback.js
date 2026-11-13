@@ -3,7 +3,7 @@
 const { shop, ecpayConfig, notifyEmail } = require("../lib/config");
 const { readBody } = require("../lib/http");
 const { createBlobStore } = require("../lib/store");
-const { callAppsScript } = require("../lib/sheet");
+const { callAppsScript, toSheetUpdate } = require("../lib/sheet");
 const { sendMail } = require("../lib/mailer");
 const { verifyCheckMacValue, formatTaipei, describePaymentType } = require("../lib/ecpay");
 const { renderCustomerEmail, renderOwnerEmail, renderAlertEmail } = require("../lib/emailTemplates");
@@ -74,7 +74,7 @@ function makeHandler(deps = defaultDeps) {
         order.lastRtn = { code: params.RtnCode, msg: params.RtnMsg, at: deps.now().toISOString() };
         await store.set("order:" + orderNo, order).catch((e) => console.warn("記錄付款失敗狀態失敗", e.message));
         await deps
-          .sheetUpdate({ action: "updateOrder", orderNo, status: `❌ 付款失敗（${params.RtnMsg || params.RtnCode}）`, paymentType: params.PaymentType || "", paidAt: "" })
+          .sheetUpdate(toSheetUpdate(order, `❌ 付款失敗（${params.RtnMsg || params.RtnCode}）`, { paymentType: params.PaymentType || "", paidAt: "" }))
           .catch((e) => console.error("更新 Sheet 失敗", e.message));
         return plain(200, "1|OK");
       }
@@ -108,7 +108,7 @@ function makeHandler(deps = defaultDeps) {
         order.notified.owner = false; // 付款成功要再通知店主一次
         await store.set("order:" + orderNo, order).catch((e) => console.error("儲存已付款狀態失敗", e.message));
         await deps
-          .sheetUpdate({ action: "updateOrder", orderNo, status: order.status, paymentType: order.paymentTypeLabel, paidAt: order.paidAtText })
+          .sheetUpdate(toSheetUpdate(order, order.status, { paymentType: order.paymentTypeLabel, paidAt: order.paidAtText }))
           .catch((e) => console.error("更新 Sheet 失敗", e.message));
       }
 

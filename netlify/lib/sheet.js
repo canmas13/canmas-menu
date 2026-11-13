@@ -2,14 +2,16 @@
 // 沿用既有的 Apps Script 介面（POST text/plain，內容為 JSON，回傳 {status:"ok"}）
 const { appsScriptUrl } = require("./config");
 
-async function callAppsScript(payload, { fetchImpl = fetch, url = appsScriptUrl() } = {}) {
+async function callAppsScript(payload, { fetchImpl = fetch, url = appsScriptUrl(), secret = process.env.APPS_SCRIPT_SECRET } = {}) {
+  // 若設了 APPS_SCRIPT_SECRET，隨請求附上；新版 Apps Script 設了同值的 SECRET 後只收這種請求
+  const body = secret ? { ...payload, secret } : payload;
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), 9000);
   try {
     const res = await fetchImpl(url, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(body),
       redirect: "follow",
       signal: ctl.signal,
     });
@@ -51,4 +53,18 @@ function toSheetRow(order, statusText) {
   };
 }
 
-module.exports = { callAppsScript, toSheetRow };
+// 更新既有訂單的狀態（付款成功／失敗）。
+// 新版 Apps Script 看 action === "updateOrder" 就原地更新那一列；
+// 同時附上完整訂單欄位，萬一接到的是不認得 action 的舊腳本（會當成新訂單寫入一列），
+// 多出來的那一列也是內容完整、狀態正確的紀錄，而不是只有訂單編號的空白列。
+function toSheetUpdate(order, statusText, { paymentType = "", paidAt = "" } = {}) {
+  return {
+    ...toSheetRow(order, statusText),
+    action: "updateOrder",
+    status: statusText,
+    paymentType,
+    paidAt,
+  };
+}
+
+module.exports = { callAppsScript, toSheetRow, toSheetUpdate };

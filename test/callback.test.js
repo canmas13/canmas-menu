@@ -67,6 +67,10 @@ test("付款成功：標記已付款、更新 Sheet、寄付款成功信給客�
     [ctx.sheetUpdates[0].action, ctx.sheetUpdates[0].orderNo, ctx.sheetUpdates[0].status],
     ["updateOrder", "CM261112K7Q2M", "✅ 已付款（信用卡）"]
   );
+  // 同時帶完整訂單欄位：就算接到不認得 action 的舊 Apps Script，多寫的那列也是完整紀錄
+  assert.equal(ctx.sheetUpdates[0].name, "王小明");
+  assert.equal(ctx.sheetUpdates[0].total, order.total);
+  assert.equal(ctx.sheetUpdates[0].paidAt, "2026/11/12 19:52:08");
   assert.equal(ctx.sent.length, 2);
   const toCustomer = ctx.sent.find((m) => m.to === "customer@example.com");
   assert.match(toCustomer.subject, /付款成功/);
