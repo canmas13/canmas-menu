@@ -28,10 +28,9 @@ POST /.netlify/functions/create-order
 
 ## 部署前要做的設定
 
-### 1. 運費（必填）
+### 1. 運費
 
-`shop-config.json` 的 `shipping.fee`（未滿 NT$2,000 的運費，整數）目前是 `null`。
-未填之前，未滿免運門檻的訂單會被系統拒絕，避免收錯運費。
+`shop-config.json` 的 `shipping`：滿 NT$2,000 免運（`freeThreshold`），未滿收 NT$80（`fee`）。要調整時改這兩個數字、重新部署即可；`fee` 若設為 `null`，未滿免運的訂單會被系統拒絕。
 
 ### 2. 寄信（二選一，Netlify → Site configuration → Environment variables）
 
@@ -67,7 +66,7 @@ POST /.netlify/functions/create-order
 
 ## 上線檢查表
 
-1. 填 `shipping.fee`，部署。
+1. 部署（運費已設為 NT$80）。
 2. 設定寄信變數與 Apps Script，用 ATM 下一筆真實訂單，確認客人與店主都收到信、Sheet 有新增。
 3. 保持 `ECPAY_ENV` 未設定（測試環境），選「信用卡」下單，用[綠界測試信用卡](https://developers.ecpay.com.tw/)完成付款，確認收到「付款成功」信。
 4. 在綠界後台確認 ReturnURL 通知成功（回 `1|OK`）。
