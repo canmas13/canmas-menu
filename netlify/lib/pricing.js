@@ -10,19 +10,22 @@ function priceCart(items, products, shop) {
   if (!Array.isArray(items) || items.length === 0) throw new UserError("購物清單是空的");
   if (items.length > limits.maxLines) throw new UserError("品項過多，請分次下單");
 
-  const merged = new Map(); // 同品名同規格合併
+  const levels = Array.isArray(shop.roastLevels) ? shop.roastLevels : [];
+  const merged = new Map(); // 同品名、同規格、同烘焙度合併
   for (const it of items) {
     const name = String(it && it.name ? it.name : "");
     const size = String(it && it.size ? it.size : "");
     const qty = Number(it && it.qty);
+    const roast = String(it && it.roast ? it.roast : "");
     if (!name || !SIZES[size]) throw new UserError("商品規格不正確，請重新整理頁面後再試");
     if (!Number.isInteger(qty) || qty < 1 || qty > limits.maxQtyPerLine) {
       throw new UserError(`每項商品數量需介於 1 到 ${limits.maxQtyPerLine}`);
     }
-    const k = normName(name) + "|" + size;
+    if (levels.length && !levels.includes(roast)) throw new UserError("請為每項商品選擇烘焙度");
+    const k = normName(name) + "|" + size + "|" + roast;
     const prev = merged.get(k);
     if (prev) prev.qty += qty;
-    else merged.set(k, { name, size, qty });
+    else merged.set(k, { name, size, roast, qty });
   }
 
   const lines = [];
@@ -33,7 +36,7 @@ function priceCart(items, products, shop) {
     const unit = product[SIZES[it.size]];
     if (!unit) throw new UserError(`「${product.name}」沒有提供${it.size}規格`);
     if (it.qty > limits.maxQtyPerLine) throw new UserError(`每項商品數量上限為 ${limits.maxQtyPerLine}`);
-    lines.push({ name: product.name, size: it.size, unit, qty: it.qty, subtotal: unit * it.qty });
+    lines.push({ name: product.name, size: it.size, roast: it.roast, unit, qty: it.qty, subtotal: unit * it.qty });
   }
 
   const subtotal = lines.reduce((s, l) => s + l.subtotal, 0);

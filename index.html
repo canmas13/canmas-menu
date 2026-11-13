@@ -67,6 +67,8 @@ body{background:var(--bg);color:var(--cream);font-family:'Noto Serif TC',serif;m
 
 .item-notes{font-size:14px;color:var(--silver);line-height:1.8;margin-bottom:12px;}
 .add-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.roast-select{margin-top:8px;display:block;}
+.roast-select.missing{border-color:var(--danger);}
 .size-select{background:var(--bg-3);border:1px solid var(--border-blue);border-radius:8px;color:var(--cream);font-family:'Noto Serif TC',serif;font-size:13px;padding:7px 10px;}
 .qty-wrap{display:flex;align-items:center;gap:5px;}
 .qty-btn{width:30px;height:30px;background:var(--bg-3);border:1px solid var(--border-blue);border-radius:7px;color:var(--cream);font-size:17px;cursor:pointer;}
@@ -216,6 +218,7 @@ const API_BASE = (location.hostname.endsWith(".netlify.app") || location.hostnam
 let SHOP = {
   brand: { email: "canmas13@gmail.com", phone: "03-260-5030" },
   shipping: { freeThreshold: 2000, fee: null },
+  roastLevels: ["淺焙", "淺中焙", "中焙", "中深焙", "深焙"],
   bank: null
 };
 async function loadShopConfig(){
@@ -331,10 +334,11 @@ function addToCart(idx){
   const[size,price]=sel.value.split("|");
   const qty=getQty(idx);
   const exist=cart.find(c=>c.name===d.name&&c.size===size);
-  if(exist){exist.qty+=qty;}else{cart.push({name:d.name,size,price:Number(price),qty});}
+  if(exist){exist.qty+=qty;}else{cart.push({name:d.name,size,price:Number(price),qty,roast:""});}
   updateCartBadge();
 }
 
+function setRoast(i,v){ if(cart[i]) cart[i].roast=v; const el=document.getElementById(`roast-${i}`); if(el) el.classList.toggle("missing", !v); }
 function removeFromCart(i){cart.splice(i,1);updateCartBadge();renderCartBody();}
 function cartTotal(){return cart.reduce((s,c)=>s+c.price*c.qty,0);}
 
@@ -409,6 +413,10 @@ function renderCartBody(){
         <div class="cart-item-info">
           <div class="cart-item-name">${c.name}</div>
           <div class="cart-item-detail">${c.size} × ${c.qty}</div>
+          <select class="size-select roast-select" id="roast-${i}" onchange="setRoast(${i},this.value)" aria-label="烘焙度">
+            <option value="">選擇烘焙度（必選）</option>
+            ${(SHOP.roastLevels||[]).map(r=>`<option value="${r}"${c.roast===r?" selected":""}>${r}</option>`).join("")}
+          </select>
           <div class="cart-item-subtotal">$${(c.price*c.qty).toLocaleString()}</div>
         </div>
         <button class="cart-item-remove" onclick="removeFromCart(${i})">×</button>
@@ -444,7 +452,7 @@ function renderCartBody(){
         <input class="form-input" id="f-addr-detail" type="text" placeholder="路段、巷弄、門號、樓層 (必填)">
       </div>
       
-      <div class="form-group"><label class="form-label">備註</label><input class="form-input" id="f-note" type="text" placeholder="烘焙度偏好、包裝需求…"></div>
+      <div class="form-group"><label class="form-label">備註</label><input class="form-input" id="f-note" type="text" placeholder="包裝需求、其他說明…"></div>
       
       <div class="form-group">
         <label class="form-label">付款方式</label>
@@ -482,6 +490,12 @@ async function submitOrder(){
   const addrDetail=document.getElementById("f-addr-detail").value.trim();
   const note=document.getElementById("f-note").value.trim();
   
+  const noRoast = (SHOP.roastLevels||[]).length ? cart.findIndex(c=>!c.roast) : -1;
+  if (noRoast >= 0) {
+    alert(`請選擇「${cart[noRoast].name}」的烘焙度`);
+    const el=document.getElementById(`roast-${noRoast}`); if(el){ el.classList.add("missing"); el.focus(); }
+    return;
+  }
   if (!name) { alert("請輸入收件人姓名"); document.getElementById("f-name").focus(); return; }
   if (!cleanPhone) { alert("請輸入聯絡電話"); document.getElementById("f-phone").focus(); return; }
   
@@ -518,7 +532,7 @@ async function submitOrder(){
   const payload = {
     paymentMethod: method,
     customer: { name, phone: cleanPhone, email, city, district: dist, addressDetail: addrDetail, note },
-    items: cart.map(c=>({ name: c.name, size: c.size, qty: c.qty })),
+    items: cart.map(c=>({ name: c.name, size: c.size, roast: c.roast, qty: c.qty })),
     hp: (document.getElementById("f-hp")||{}).value || ""
   };
 

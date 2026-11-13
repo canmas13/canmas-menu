@@ -56,7 +56,7 @@ function itemsTable(order) {
       (l) => `<tr>
 <td style="padding:14px 0;border-bottom:1px solid ${C.line};font-family:${SANS};">
 <div style="font-size:15px;color:${C.ink};line-height:1.5;font-weight:600;">${esc(l.name)}</div>
-<div style="font-size:12px;color:${C.mute};margin-top:3px;">${esc(l.size)} · 單價 ${money(l.unit)}</div></td>
+<div style="font-size:12px;color:${C.mute};margin-top:3px;">${esc(l.size)}${l.roast ? " · " + esc(l.roast) : ""} · 單價 ${money(l.unit)}</div></td>
 <td align="center" width="56" style="padding:14px 4px;border-bottom:1px solid ${C.line};font-family:${SANS};font-size:14px;color:${C.ink};">× ${l.qty}</td>
 <td align="right" width="104" style="padding:14px 0;border-bottom:1px solid ${C.line};font-family:${SANS};font-size:15px;color:${C.ink};font-weight:600;">${money(l.subtotal)}</td>
 </tr>`
@@ -217,7 +217,7 @@ ${recipientBlock(order)}
 }
 
 function lineItemsText(order, shop) {
-  const lines = order.lines.map((l) => `・${l.name}（${l.size}）× ${l.qty}　${money(l.subtotal)}`);
+  const lines = order.lines.map((l) => `・${l.name}（${l.size}${l.roast ? "・" + l.roast : ""}）× ${l.qty}　${money(l.subtotal)}`);
   lines.push("");
   lines.push(`商品小計：${money(order.subtotal)}`);
   lines.push(

@@ -30,6 +30,8 @@ POST /.netlify/functions/create-order
 
 ### 1. 運費
 
+`shop-config.json` 的 `roastLevels`：結帳時每項商品必選的烘焙度選項（淺焙、淺中焙、中焙、中深焙、深焙），會出現在 Sheet 品項、信件與綠界品名。
+
 `shop-config.json` 的 `shipping`：滿 NT$2,000 免運（`freeThreshold`），未滿收 NT$80（`fee`）。要調整時改這兩個數字、重新部署即可；`fee` 若設為 `null`，未滿免運的訂單會被系統拒絕。
 
 ### 2. 寄信（二選一，Netlify → Site configuration → Environment variables）
@@ -96,7 +98,7 @@ POST /.netlify/functions/create-order
 
 ```bash
 npm install
-npm test                 # 60 項自動測試（簽章官方範例、金額、callback、信件、下單流程、Apps Script 邏輯）
+npm test                 # 62 項自動測試（簽章官方範例、金額、callback、信件、下單流程、Apps Script 邏輯）
 npm run preview:email    # 產生信件預覽到 preview/
 ```
 

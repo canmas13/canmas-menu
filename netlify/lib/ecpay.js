@@ -54,7 +54,7 @@ function formatTaipei(date = new Date()) {
 // ItemName 上限 400 字元，超過會被截斷而造成檢查碼錯誤，所以自行安全截斷
 function buildItemName(order) {
   const clean = (s) => String(s).replace(/[#<>&"'%\\]/g, " ").replace(/\s+/g, " ").trim();
-  const parts = order.lines.map((l) => `${clean(l.name)} ${l.size} x${l.qty}`);
+  const parts = order.lines.map((l) => `${clean(l.name)} ${l.size}${l.roast ? " " + clean(l.roast) : ""} x${l.qty}`);
   if (order.shipping > 0) parts.push("運費 x1");
   let out = parts.join("#");
   const chars = Array.from(out);

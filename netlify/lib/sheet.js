@@ -33,7 +33,7 @@ async function callAppsScript(payload, { fetchImpl = fetch, url = appsScriptUrl(
 // 新訂單：欄位維持原本 Apps Script 已在用的格式，另附帶幾個新欄位
 function toSheetRow(order, statusText) {
   const items =
-    order.lines.map((l) => `${l.name}（${l.size}×${l.qty}）`).join("、") +
+    order.lines.map((l) => `${l.name}（${l.size}${l.roast ? "・" + l.roast : ""}×${l.qty}）`).join("、") +
     (order.shipping > 0 ? `、運費 $${order.shipping}` : "");
   return {
     orderNo: order.orderNo,

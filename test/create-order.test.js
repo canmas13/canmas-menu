@@ -4,8 +4,8 @@ const { makeHandler } = require("../netlify/functions/create-order");
 const { verifyCheckMacValue } = require("../netlify/lib/ecpay");
 const { makeDeps, postEvent, customer, STAGE } = require("./_helpers");
 
-const items1 = [{ name: "衣索比亞 耶加雪菲 水洗", size: "半磅", qty: 2 }]; // 960
-const items2 = [{ name: "衣索比亞 耶加雪菲 水洗", size: "一磅", qty: 3 }]; // 2640
+const items1 = [{ name: "衣索比亞 耶加雪菲 水洗", size: "半磅", roast: "中焙", qty: 2 }]; // 960
+const items2 = [{ name: "衣索比亞 耶加雪菲 水洗", size: "一磅", roast: "中焙", qty: 3 }]; // 2640
 
 const call = async (ctx, body, headers) => {
   const res = await makeHandler(ctx.deps)(postEvent(body, headers));
@@ -141,6 +141,6 @@ test("壞 JSON、過大內容、不存在的商品都回 4xx", async () => {
   const ctx = makeDeps();
   assert.equal((await makeHandler(ctx.deps)(postEvent("{not json"))).statusCode, 400);
   assert.equal((await makeHandler(ctx.deps)(postEvent("x".repeat(30000)))).statusCode, 413);
-  const { res } = await call(ctx, { paymentMethod: "atm", customer, items: [{ name: "亂寫的豆", size: "半磅", qty: 1 }] });
+  const { res } = await call(ctx, { paymentMethod: "atm", customer, items: [{ name: "亂寫的豆", size: "半磅", roast: "中焙", qty: 1 }] });
   assert.equal(res.statusCode, 400);
 });

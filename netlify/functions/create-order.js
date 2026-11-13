@@ -2,7 +2,7 @@
 // 前端「確認送出」唯一的入口：驗證 → 後端重算金額 → 建立訂單 → 通知 →（信用卡）回傳綠界表單參數
 const { shop, ecpayConfig, sheetCsvUrl, notifyEmail, env } = require("../lib/config");
 const { UserError } = require("../lib/errors");
-const { header, json, corsHeaders, clientIp, readBody } = require("../lib/http");
+const { header, json, corsHeaders, clientIp, readBody, isAllowedOrigin } = require("../lib/http");
 const { validateCustomer, validatePaymentMethod } = require("../lib/validate");
 const { fetchCatalog } = require("../lib/catalog");
 const { priceCart, generateOrderNo } = require("../lib/pricing");
@@ -136,7 +136,7 @@ function makeHandler(deps = defaultDeps) {
         result.ecpay = buildCheckoutParams(order, {
           cfg: deps.ecpay(),
           returnUrl: callbackUrl(event),
-          clientBackUrl: deps.shop.brand.shopUrl + "/?order=" + orderNo,
+          clientBackUrl: (origin && isAllowedOrigin(origin) ? origin.replace(/\/$/, "") : deps.shop.brand.shopUrl) + "/?order=" + orderNo, // 從預覽站下單就回預覽站
           now,
         });
       }
