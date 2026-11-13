@@ -215,16 +215,28 @@ test("Netlify 送來的訂單與付款更新都不寄信", () => {
   assert.equal(e.mails.length, 0);
 });
 
-test("過渡期：舊版前端直接送來的訂單（無 paymentMethod）照舊寄店主＋客人兩封，重送不重寄", () => {
+test("任何請求都不會讓 Apps Script 寄信（不能被當成垃圾信／釣魚信跳板）", () => {
   const e = makeEnv();
-  const legacy = { orderNo: "CM260621-1297", timestamp: "2026/6/21 下午 5:09:10", name: "huang<b>", phone: "0935333333", email: "c@d.co", address: "新竹市", items: "曼特寧（半磅×1）", total: 520, note: "", status: "待匯款" };
+  const legacy = { orderNo: "CM260621-1297", name: "x", phone: "0935333333", email: "victim@example.com", items: "x", total: 1, status: "待匯款" };
   assert.equal(e.post(legacy).status, "ok");
-  e.post(legacy);
-  assert.equal(e.mails.length, 2);
-  assert.equal(e.mails[0].to, "canmas13@gmail.com");
-  assert.equal(e.mails[1].to, "c@d.co");
-  assert.match(e.mails[1].body, /3410-7172-16576/);
-  assert.ok(!e.mails[1].htmlBody.includes("<b>")); // 客人輸入的內容有跳脫
+  assert.equal(e.mails.length, 0);
+  const codeOnly = CODE.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+  assert.ok(!/MailApp|GmailApp|UrlFetchApp/.test(codeOnly));
+});
+
+test("setupSecret：建立 SECRET 後，沒帶或帶錯密碼的請求一律拒絕；已存在時不覆蓋", () => {
+  const props = {};
+  const e = makeEnv();
+  e.ctx.PropertiesService = { getScriptProperties: () => ({ getProperty: (k) => props[k] || null, setProperty: (k, v) => { props[k] = v; } }) };
+  e.ctx.Utilities.getUuid = () => "1234-5678";
+  e.ctx.setupSecret();
+  assert.equal(props.SECRET, "1234567812345678");
+  e.ctx.Utilities.getUuid = () => "zzzz";
+  e.ctx.setupSecret();
+  assert.equal(props.SECRET, "1234567812345678");
+  assert.equal(e.post(order).message, "unauthorized");
+  assert.equal(e.post({ ...order, action: "updateOrder", status: "✅ 已付款（信用卡）" }).message, "unauthorized");
+  assert.equal(e.post({ ...order, secret: "1234567812345678" }).status, "ok");
 });
 
 test("doGet 健康檢查不碰試算表；testPost 可執行且寫入一筆", () => {

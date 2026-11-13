@@ -310,11 +310,11 @@ function render(){
     const idx=allData.indexOf(d);
     const canAdd=!d.soldOut&&(d.half||d.one);
     return`<div class="item${d.soldOut?" sold-out":""}">
-      <div class="item-top"><div class="item-name">${d.name}</div>${buildPriceHTML(d)}</div>
+      <div class="item-top"><div class="item-name">${esc(d.name)}</div>${buildPriceHTML(d)}</div>
       <div class="item-tags">
-        <span class="tag process">${d.process}</span>
+        <span class="tag process">${esc(d.process)}</span>
       </div>
-      <div class="item-notes">${d.notes}</div>
+      <div class="item-notes">${esc(d.notes)}</div>
       ${canAdd?`<div class="add-row">
         <select class="size-select" id="size-${idx}">${buildSizeOptions(d)}</select>
         <div class="qty-wrap">
@@ -411,11 +411,11 @@ function renderCartBody(){
     <div class="cart-items">${cart.map((c,i)=>`
       <div class="cart-item">
         <div class="cart-item-info">
-          <div class="cart-item-name">${c.name}</div>
-          <div class="cart-item-detail">${c.size} × ${c.qty}</div>
+          <div class="cart-item-name">${esc(c.name)}</div>
+          <div class="cart-item-detail">${esc(c.size)} × ${Number(c.qty)}</div>
           <select class="size-select roast-select" id="roast-${i}" onchange="setRoast(${i},this.value)" aria-label="烘焙度">
             <option value="">選擇烘焙度（必選）</option>
-            ${(SHOP.roastLevels||[]).map(r=>`<option value="${r}"${c.roast===r?" selected":""}>${r}</option>`).join("")}
+            ${(SHOP.roastLevels||[]).map(r=>`<option value="${esc(r)}"${c.roast===r?" selected":""}>${esc(r)}</option>`).join("")}
           </select>
           <div class="cart-item-subtotal">$${(c.price*c.qty).toLocaleString()}</div>
         </div>
@@ -492,7 +492,7 @@ async function submitOrder(){
   
   const noRoast = (SHOP.roastLevels||[]).length ? cart.findIndex(c=>!c.roast) : -1;
   if (noRoast >= 0) {
-    alert(`請選擇「${cart[noRoast].name}」的烘焙度`);
+    alert(`請選擇「${cart[noRoast].name}」的烘焙度`); // alert 為純文字
     const el=document.getElementById(`roast-${noRoast}`); if(el){ el.classList.add("missing"); el.focus(); }
     return;
   }
@@ -591,6 +591,8 @@ async function submitOrder(){
 
 // 以表單 POST 前往綠界付款頁（綠界只接受表單 POST）
 function postToEcpay(ecpay){
+  // 只允許送往綠界官方付款網址，避免回應被竄改時把客人導到別處
+  if(!/^https:\/\/payment(-stage)?\.ecpay\.com\.tw\//.test(String(ecpay&&ecpay.action))) throw new Error("付款網址異常，已停止前往付款頁");
   const form=document.createElement("form");
   form.method="POST";
   form.action=ecpay.action;
@@ -649,8 +651,9 @@ function parseCSV(text){
     cols.push(cur);
     const obj={};headers.forEach((h,i)=>obj[h]=(cols[i]||"").trim());
     const pp=parsePrice(obj.price||"");
+    const num=v=>{const n=Number(String(v||"").replace(/[^0-9.]/g,""));return n>0?n:0;};
     return{region:obj.region||"",name:obj.name||"",process:obj.process||"",notes:obj.notes||"",
-      half:obj.half||pp.half,one:obj.one||pp.one,
+      half:num(obj.half||pp.half),one:num(obj.one||pp.one),
       soldOut:(obj.soldOut||"").toUpperCase()==="TRUE"};
   }).filter(d=>d.name);
 }
