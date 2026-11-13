@@ -4,8 +4,12 @@ const crypto = require("crypto");
 
 function createBlobStore(event) {
   const { connectLambda, getStore } = require("@netlify/blobs");
-  connectLambda(event); // Lambda 相容模式需手動初始化
-  const s = getStore({ name: "orders", consistency: "strong" });
+  // Lambda 相容模式（exports.handler）需手動初始化，但它的連線資訊不含 uncachedEdgeURL；
+  // 這時若指定 consistency:"strong"，每一次讀寫都會直接丟 BlobsConsistencyError。
+  // 所以相容模式用預設（最終一致）；同一區域的函式讀寫實務上立即可見，付款回呼另有重讀機制。
+  const lambdaCompat = Boolean(event && event.blobs);
+  if (lambdaCompat) connectLambda(event);
+  const s = getStore(lambdaCompat ? { name: "orders" } : { name: "orders", consistency: "strong" });
   return {
     get: (key) => s.get(key, { type: "json" }),
     set: (key, value) => s.setJSON(key, value),

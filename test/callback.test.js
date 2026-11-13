@@ -117,12 +117,24 @@ test("金額與訂單不符：不標記已付款、不寄客人，寄警示信�
   assert.equal(ctx.sheetUpdates.length, 0);
 });
 
-test("找不到訂單：警示店主，仍回 1|OK 以免綠界無限重送", async () => {
-  const ctx = makeDeps();
+test("找不到訂單：重讀幾次後警示店主，仍回 1|OK 以免綠界無限重送", async () => {
+  let sleeps = 0;
+  const ctx = makeDeps({ deps: { sleep: async () => { sleeps++; } } });
   const res = await makeHandler(ctx.deps)(cbEvent(cbParams()));
   assert.equal(res.body, "1|OK");
+  assert.equal(sleeps, 2);
   assert.equal(ctx.sent.length, 1);
   assert.match(ctx.sent[0].subject, /找不到對應訂單/);
+});
+
+test("訂單剛建立、第一次讀不到（最終一致）：重讀後讀到，照常處理付款", async () => {
+  let ctx;
+  ctx = makeDeps({ deps: { sleep: async () => { await ctx.store.set("order:CM261112K7Q2M", seedOrder()); } } });
+  const res = await makeHandler(ctx.deps)(cbEvent(cbParams()));
+  assert.equal(res.body, "1|OK");
+  assert.equal((await ctx.store.get("order:CM261112K7Q2M")).paid, true);
+  assert.equal(ctx.sent.length, 2); // 客人付款成功信 + 店主已付款通知，沒有「找不到訂單」警示
+  assert.ok(ctx.sent.every((m) => !/找不到對應訂單/.test(m.subject)));
 });
 
 test("付款失敗（RtnCode≠1）：只記錄與更新 Sheet，不寄客人信", async () => {

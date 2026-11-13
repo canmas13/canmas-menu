@@ -58,7 +58,13 @@ function makeHandler(deps = defaultDeps) {
       }
 
       const store = deps.openStore(event);
-      const order = await store.get("order:" + orderNo);
+      // 儲存為最終一致，剛建立的訂單偶爾要等一下才讀得到；先重讀幾次再判定找不到
+      const sleep = deps.sleep || ((ms) => new Promise((r) => setTimeout(r, ms)));
+      let order = await store.get("order:" + orderNo);
+      for (let i = 0; !order && i < 2; i++) {
+        await sleep(1500);
+        order = await store.get("order:" + orderNo);
+      }
       if (!order) {
         await alertOwner("收到綠界付款通知，但找不到對應訂單", [
           `訂單編號：${orderNo}`,
