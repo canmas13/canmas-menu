@@ -6,7 +6,8 @@
  *   - 顧客寫入／更新「顧客資料」（原本的 10 欄不動）
  *
  * 和舊版的差異：
- *   1. 不再用 MailApp 寄信 —— 店主通知與客人確認信改由 Netlify 後端統一寄出（避免重複寄兩次）。
+ *   1. Netlify 送來的訂單不再寄信 —— 店主通知與客人確認信改由 Netlify 後端統一寄出（避免重複寄兩次）。
+ *      過渡期：舊版前端直接送來的訂單（沒有 paymentMethod）仍照舊寄信，PR 上線後自然不再發生。
  *   2. 認得 { action: "updateOrder" }：付款成功／失敗時，原地更新該筆訂單的狀態、付款時間、付款管道。
  *   3. 電話一律以純文字寫入，保留開頭的 0；顧客比對時會把「912345678」與「0912345678」視為同一支電話，
  *      不會再為同一位客人重複建檔。
@@ -256,7 +257,8 @@ function doPost(e) {
     } else if (row < 0) {
       appendOrder_(sheet, data);
       upsertCustomer_(ss, data);
-    } // 同一訂單編號重複送來：視為重送，不重複寫入
+      if (isLegacyRequest_(data)) sendLegacyMails_(data);
+    } // 同一訂單編號重複送來：視為重送，不重複寫入（也不重複寄信）
 
     return out_({ status: 'ok', orderNo: data.orderNo });
   } catch (err) {
@@ -266,6 +268,57 @@ function doPost(e) {
       try { lock.releaseLock(); } catch (ignore) {}
     }
   }
+}
+
+// ---- 過渡期相容：舊版前端（目前正式站 main 分支）直接 POST 到本腳本，沒有 paymentMethod 欄位，
+// 也沒有 Netlify 幫它寄信。這類請求照舊寄店主通知與客人確認信；PR 合併上線後就不會再有這種請求。
+var SHOP_EMAIL = 'canmas13@gmail.com';
+var SHOP_NAME = '肯馬仕 CANMAS Coffee';
+var BANK_INFO_TEXT = '銀行代碼：006（合作金庫 六家分行）\n帳戶號碼：3410-7172-16576\n戶名：肯馬仕有限公司';
+
+function isLegacyRequest_(data) {
+  return !data.action && !data.paymentMethod;
+}
+
+function esc_(s) {
+  return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
+function sendLegacyMails_(data) {
+  var email = String(data.email || '').trim();
+  var ts = data.timestamp || now_();
+  var lines = [
+    '訂單編號：' + (data.orderNo || ''),
+    '下單時間：' + ts,
+    '姓名：' + (data.name || ''),
+    '電話：' + (data.phone || ''),
+    'Email：' + email,
+    '寄送地址：' + (data.address || ''),
+    '訂購品項：' + (data.items || ''),
+    '合計金額：$' + (data.total || 0),
+    '備註：' + (data.note || '無')
+  ];
+  try {
+    MailApp.sendEmail({ to: SHOP_EMAIL, subject: '【肯馬仕咖啡新訂單】' + (data.orderNo || ''), body: lines.join('\n') });
+  } catch (e) { Logger.log('店主通知信發送失敗: ' + e.message); }
+
+  if (!email) return;
+  try {
+    var plain = (data.name || '您好') + '，感謝您的訂購！\n\n' + lines.join('\n') +
+      '\n\n請透過以下帳號完成匯款，並回覆本信告知匯款帳號後五碼，我們將儘快為您安排出貨：\n\n' + BANK_INFO_TEXT +
+      '\n\n若有任何問題，歡迎直接回覆本信或聯繫 ' + SHOP_EMAIL + '。\n\n' + SHOP_NAME + ' 敬上';
+    var html = '<div style="font-family:sans-serif;color:#222;line-height:1.8;max-width:560px;margin:0 auto;">' +
+      '<h2 style="color:#B8860B;border-bottom:2px solid #D4A843;padding-bottom:10px;">訂單確認通知</h2>' +
+      '<p>' + esc_(data.name || '您好') + '，感謝您的訂購！</p>' +
+      '<p>' + lines.map(esc_).join('<br>') + '</p>' +
+      '<div style="background:#f7f3ea;border:1px solid #D4A843;border-radius:8px;padding:14px 16px;margin:16px 0;">' +
+      '<strong>匯款資訊</strong><br>' + esc_(BANK_INFO_TEXT).replace(/\n/g, '<br>') + '</div>' +
+      '<p>完成匯款後，請回覆本信告知匯款帳號後五碼，我們將儘快為您安排出貨。</p>' +
+      '<p style="color:#999;">' + esc_(SHOP_NAME) + ' 敬上</p></div>';
+    MailApp.sendEmail({ to: email, subject: '【' + SHOP_NAME + '】訂單確認 - ' + (data.orderNo || ''), body: plain, htmlBody: html, name: SHOP_NAME, replyTo: SHOP_EMAIL });
+  } catch (e) { Logger.log('訂購人確認信發送失敗: ' + e.message); }
 }
 
 // 瀏覽器開啟網址時的健康檢查（不碰試算表）

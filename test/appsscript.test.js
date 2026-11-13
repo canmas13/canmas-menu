@@ -46,6 +46,7 @@ function makeSheet(name, rows = []) {
 // seed: { 訂單記錄: [[...header], [...row]], 顧客資料: [...] }
 function makeEnv({ secret, seed = {} } = {}) {
   const sheets = {};
+  const mails = [];
   for (const [n, rows] of Object.entries(seed)) sheets[n] = makeSheet(n, rows);
   const ss = {
     getSheetByName: (n) => sheets[n] || null,
@@ -58,11 +59,12 @@ function makeEnv({ secret, seed = {} } = {}) {
     ContentService: { MimeType: { JSON: "json" }, createTextOutput: (t) => ({ text: t, getContent: () => t, setMimeType() { return this; } }) },
     Utilities: { formatDate: () => "261113-100000" },
     Logger: { log() {} },
+    MailApp: { sendEmail: (m) => mails.push(m) },
   };
   vm.createContext(ctx);
   vm.runInContext(CODE, ctx);
   const post = (obj) => JSON.parse(ctx.doPost({ postData: { contents: JSON.stringify(obj) } }).text);
-  return { ctx, sheets, post };
+  return { ctx, sheets, post, mails };
 }
 
 const order = {
@@ -206,10 +208,23 @@ test("缺訂單編號 → error；設了 SECRET 時密碼不符 → unauthorized
   assert.equal(e.sheets["訂單記錄"].grid.length, 2);
 });
 
-test("不再寄信：程式碼（不含註解）沒有 MailApp / GmailApp，免寄信權限", () => {
-  const codeOnly = CODE.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
-  assert.ok(!/MailApp|GmailApp/.test(codeOnly));
-  assert.ok(/MailApp/.test(CODE), "說明註解仍會提到已移除寄信（確認 codeOnly 的過濾確實有作用）");
+test("Netlify 送來的訂單與付款更新都不寄信", () => {
+  const e = makeEnv();
+  e.post(order);
+  e.post(paid());
+  assert.equal(e.mails.length, 0);
+});
+
+test("過渡期：舊版前端直接送來的訂單（無 paymentMethod）照舊寄店主＋客人兩封，重送不重寄", () => {
+  const e = makeEnv();
+  const legacy = { orderNo: "CM260621-1297", timestamp: "2026/6/21 下午 5:09:10", name: "huang<b>", phone: "0935333333", email: "c@d.co", address: "新竹市", items: "曼特寧（半磅×1）", total: 520, note: "", status: "待匯款" };
+  assert.equal(e.post(legacy).status, "ok");
+  e.post(legacy);
+  assert.equal(e.mails.length, 2);
+  assert.equal(e.mails[0].to, "canmas13@gmail.com");
+  assert.equal(e.mails[1].to, "c@d.co");
+  assert.match(e.mails[1].body, /3410-7172-16576/);
+  assert.ok(!e.mails[1].htmlBody.includes("<b>")); // 客人輸入的內容有跳脫
 });
 
 test("doGet 健康檢查不碰試算表；testPost 可執行且寫入一筆", () => {
