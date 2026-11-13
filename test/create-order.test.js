@@ -145,3 +145,13 @@ test("壞 JSON、過大內容、不存在的商品都回 4xx", async () => {
   const { res } = await call(ctx, { paymentMethod: "atm", customer, items: [{ name: "亂寫的豆", size: "半磅", roast: "中焙", qty: 1 }] });
   assert.equal(res.statusCode, 400);
 });
+
+test("全站上限：每小時最多 40 筆，換 IP、換 Email 也擋得住", async () => {
+  const ctx = makeDeps();
+  let last;
+  for (let i = 0; i < 41; i++) {
+    last = await call(ctx, { paymentMethod: "atm", customer: { ...customer, email: `u${i}@example.com` }, items: items1 }, { "x-nf-client-connection-ip": `10.0.0.${i}` });
+  }
+  assert.equal(last.res.statusCode, 429);
+  assert.equal(ctx.sent.filter((m) => m.to === "u40@example.com").length, 0);
+});

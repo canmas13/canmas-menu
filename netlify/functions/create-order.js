@@ -60,7 +60,9 @@ function makeHandler(deps = defaultDeps) {
 
       const ipOk = await rateLimit(store, "ip:" + clientIp(event), { limit: 8, windowSec: 3600, nowMs: now.getTime() });
       const mailOk = await rateLimit(store, "mail:" + customer.email, { limit: 4, windowSec: 3600, nowMs: now.getTime() });
-      if (!ipOk || !mailOk) throw new UserError("操作過於頻繁，請稍後再試，或直接聯繫我們", 429);
+      // 全站總量上限：就算攻擊者換 IP、換 Email，也無法大量觸發寄信
+      const globalOk = ipOk && mailOk && (await rateLimit(store, "global", { limit: 40, windowSec: 3600, nowMs: now.getTime() }));
+      if (!ipOk || !mailOk || !globalOk) throw new UserError("操作過於頻繁，請稍後再試，或直接聯繫我們", 429);
 
       const products = await deps.getProducts();
       const quote = priceCart(input.items, products, deps.shop);
