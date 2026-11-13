@@ -1,38 +1,53 @@
 /**
- * CANMAS COFFEE 訂單接收（Google Apps Script Web App）
+ * CANMAS COFFEE 訂單接收（Google Apps Script Web App）— 合併版
+ *
+ * 用來「取代」現有 canmas_coffee_beans 專案裡的 程式碼.gs，沿用同一份試算表：
+ *   - 訂單寫入「訂單記錄」（原本的 10 欄不動，右邊新增 3 欄：付款方式、付款時間、綠界付款管道）
+ *   - 顧客寫入／更新「顧客資料」（原本的 10 欄不動）
+ *
+ * 和舊版的差異：
+ *   1. 不再用 MailApp 寄信 —— 店主通知與客人確認信改由 Netlify 後端統一寄出（避免重複寄兩次）。
+ *   2. 認得 { action: "updateOrder" }：付款成功／失敗時，原地更新該筆訂單的狀態、付款時間、付款管道。
+ *   3. 電話一律以純文字寫入，保留開頭的 0；顧客比對時會把「912345678」與「0912345678」視為同一支電話，
+ *      不會再為同一位客人重複建檔。
+ *   4. 同一訂單編號重複送來（網路重送）只寫一次。
+ *   5. 付款失敗時，顧客的累計訂單數／消費金額會扣回；之後同一筆付款成功再加回。
  *
  * 由 Netlify 後端呼叫（POST，Content-Type: text/plain，內容為 JSON）：
- *   - 新訂單：{ orderNo, timestamp, name, phone, email, address, items, subtotal, shipping, total, paymentMethod, status, note }
- *   - 付款結果：{ action: "updateOrder", orderNo, status, paymentType, paidAt, ...同上 }
- * 回傳 JSON：{ status: "ok" } 或 { status: "error", message }
+ *   - 新訂單：{ orderNo, timestamp, name, phone, email, address, items, total, note, status, paymentMethod, ... }
+ *   - 付款結果：{ action: "updateOrder", orderNo, status, paidAt, paymentType, ...同上 }
+ * 回傳 JSON：{ status: "ok", orderNo } 或 { status: "error", message }
  *
- * 訂單會寫入本試算表的「網站訂單」分頁（不存在時自動建立）。
  * 選用：在「專案設定 → 指令碼屬性」新增 SECRET，並在 Netlify 設同值的 APPS_SCRIPT_SECRET，
  * 之後只有你的網站後端寫得進來。
  */
-var SHEET_NAME = '網站訂單';
+var SPREADSHEET_ID = '1WTt3GZ7WDMXpeFh-j1btJB28z8aHwRobE4GaJuEr_XY';
+var ORDER_SHEET = '訂單記錄';
+var CUSTOMER_SHEET = '顧客資料';
+var HEADER_BG = '#1a1a24';
+var HEADER_FG = '#C9A84C';
 
-// [payload 欄位, 表頭, 型別]；text 欄位一律以純文字寫入（保留電話開頭的 0，也避免 =、+ 開頭的內容被當成公式）
-var COLUMNS = [
+// [payload 欄位, 表頭, 型別]。前 10 欄與舊版完全相同（位置不可調動）；text 一律以純文字寫入，
+// 保留電話開頭的 0，也避免 =、+ 開頭的內容被當成公式。
+var ORDER_COLS = [
   ['orderNo', '訂單編號', 'text'],
   ['timestamp', '下單時間', 'text'],
   ['name', '姓名', 'text'],
   ['phone', '電話', 'text'],
   ['email', 'Email', 'text'],
-  ['address', '地址', 'text'],
+  ['address', '寄送地址', 'text'],
   ['items', '品項', 'text'],
-  ['subtotal', '商品小計', 'num'],
-  ['shipping', '運費', 'num'],
-  ['total', '應付總額', 'num'],
-  ['paymentMethod', '付款方式', 'text'],
+  ['total', '合計金額', 'num'],
+  ['note', '備註', 'text'],
   ['status', '狀態', 'text'],
+  ['paymentMethod', '付款方式', 'text'],
   ['paidAt', '付款時間', 'text'],
-  ['paymentType', '綠界付款方式', 'text'],
-  ['note', '備註', 'text']
+  ['paymentType', '綠界付款管道', 'text']
 ];
+var CUSTOMER_HEADERS = ['顧客編號', '姓名', '電話', 'Email', '常用地址', '首次下單', '最近下單', '累計訂單數', '累計消費金額', '備註'];
 
-function col_(key) {
-  for (var i = 0; i < COLUMNS.length; i++) if (COLUMNS[i][0] === key) return i + 1;
+function orderCol_(key) {
+  for (var i = 0; i < ORDER_COLS.length; i++) if (ORDER_COLS[i][0] === key) return i + 1;
   throw new Error('未知欄位 ' + key);
 }
 
@@ -40,21 +55,60 @@ function out_(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }
 
-function getSheet_() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  if (!ss) throw new Error('請從試算表的「擴充功能 → Apps Script」開啟本專案，而不是在 script.google.com 單獨建立');
-  var sheet = ss.getSheetByName(SHEET_NAME);
-  if (!sheet) sheet = ss.insertSheet(SHEET_NAME);
-  if (sheet.getLastRow() === 0) {
-    var head = sheet.getRange(1, 1, 1, COLUMNS.length);
-    head.setValues([COLUMNS.map(function (c) { return c[1]; })]);
-    head.setFontWeight('bold');
+function now_() {
+  return new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
+}
+
+function styleHeader_(range) {
+  range.setBackground(HEADER_BG).setFontColor(HEADER_FG).setFontWeight('bold');
+}
+
+// 電話正規化：只留數字；+886 轉 0 開頭；被試算表吃掉開頭 0 的手機（9 開頭、9 碼）補回 0
+function normPhone_(v) {
+  var d = String(v === null || v === undefined ? '' : v).replace(/\D/g, '');
+  if (d.indexOf('886') === 0 && d.length >= 11) d = '0' + d.slice(3);
+  if (d.length === 9 && d.charAt(0) === '9') d = '0' + d;
+  return d;
+}
+
+function isFailed_(status) {
+  return /❌|失敗|取消/.test(String(status || ''));
+}
+
+function getOrderSheet_(ss) {
+  var sheet = ss.getSheetByName(ORDER_SHEET);
+  if (!sheet) {
+    sheet = ss.insertSheet(ORDER_SHEET);
+    var head = sheet.getRange(1, 1, 1, ORDER_COLS.length);
+    head.setValues([ORDER_COLS.map(function (c) { return c[1]; })]);
+    styleHeader_(head);
+    sheet.setFrozenRows(1);
+    return sheet;
+  }
+  // 既有分頁：只補上右邊缺少的新欄位表頭，不動原本的欄位
+  for (var c = 11; c <= ORDER_COLS.length; c++) {
+    var cell = sheet.getRange(1, c);
+    if (String(cell.getValues()[0][0] || '') === '') {
+      cell.setValues([[ORDER_COLS[c - 1][1]]]);
+      styleHeader_(cell);
+    }
+  }
+  return sheet;
+}
+
+function getCustomerSheet_(ss) {
+  var sheet = ss.getSheetByName(CUSTOMER_SHEET);
+  if (!sheet) {
+    sheet = ss.insertSheet(CUSTOMER_SHEET);
+    var head = sheet.getRange(1, 1, 1, CUSTOMER_HEADERS.length);
+    head.setValues([CUSTOMER_HEADERS]);
+    styleHeader_(head);
     sheet.setFrozenRows(1);
   }
   return sheet;
 }
 
-function findRow_(sheet, orderNo) {
+function findOrderRow_(sheet, orderNo) {
   var last = sheet.getLastRow();
   if (last < 2) return -1;
   var ids = sheet.getRange(2, 1, last - 1, 1).getValues();
@@ -64,28 +118,120 @@ function findRow_(sheet, orderNo) {
   return -1;
 }
 
-function rowValues_(data) {
-  return COLUMNS.map(function (c) {
+function orderValues_(data) {
+  return ORDER_COLS.map(function (c) {
     var v = data[c[0]];
     if (c[2] === 'num') return Number(v) || 0;
+    if (c[0] === 'timestamp' && !v) return now_();
+    if (c[0] === 'status' && !v) return '待確認';
+    if (c[0] === 'email') return String(v === null || v === undefined ? '' : v).trim();
     return v === null || v === undefined ? '' : String(v);
   });
 }
 
-function writeRow_(sheet, row, values) {
-  var range = sheet.getRange(row, 1, 1, COLUMNS.length);
-  range.setNumberFormats([COLUMNS.map(function (c) { return c[2] === 'text' ? '@' : '0'; })]);
-  range.setValues([values]);
+function appendOrder_(sheet, data) {
+  var row = sheet.getLastRow() + 1;
+  var range = sheet.getRange(row, 1, 1, ORDER_COLS.length);
+  range.setNumberFormats([ORDER_COLS.map(function (c) { return c[2] === 'text' ? '@' : '0'; })]);
+  range.setValues([orderValues_(data)]);
+  return row;
 }
 
 function setText_(sheet, row, key, value) {
-  var cell = sheet.getRange(row, col_(key));
+  var cell = sheet.getRange(row, orderCol_(key));
   cell.setNumberFormat('@');
-  cell.setValue(String(value));
+  cell.setValues([[String(value)]]);
+}
+
+// 找到顧客所在列（用正規化後的電話比對）；回傳 { row, values } 或 null
+function findCustomer_(sheet, phoneN) {
+  var last = sheet.getLastRow();
+  if (last < 2 || !phoneN) return null;
+  var vals = sheet.getRange(2, 1, last - 1, CUSTOMER_HEADERS.length).getValues();
+  for (var i = 0; i < vals.length; i++) {
+    if (normPhone_(vals[i][2]) === phoneN) return { row: i + 2, values: vals[i] };
+  }
+  return null;
+}
+
+function nextCustomerNo_(sheet) {
+  var last = sheet.getLastRow();
+  var max = 0;
+  if (last >= 2) {
+    var ids = sheet.getRange(2, 1, last - 1, 1).getValues();
+    for (var i = 0; i < ids.length; i++) {
+      var n = parseInt(String(ids[i][0]).replace(/\D/g, ''), 10);
+      if (n > max) max = n;
+    }
+  }
+  return 'C' + String(max + 1).padStart(4, '0');
+}
+
+// 新訂單成立：顧客建檔，或累計訂單數 +1、消費金額加上本單
+function upsertCustomer_(ss, data) {
+  var phoneN = normPhone_(data.phone);
+  if (!phoneN) return;
+  var sheet = getCustomerSheet_(ss);
+  var total = Number(data.total) || 0;
+  var email = String(data.email || '').trim();
+  var found = findCustomer_(sheet, phoneN);
+  var stamp = now_();
+
+  if (found) {
+    var v = found.values;
+    var r = found.row;
+    sheet.getRange(r, 2).setValues([[data.name || v[1]]]);
+    var phoneCell = sheet.getRange(r, 3);
+    phoneCell.setNumberFormat('@');
+    phoneCell.setValues([[phoneN]]); // 順便把被吃掉的開頭 0 補回來
+    if (email) sheet.getRange(r, 4).setValues([[email]]);
+    if (data.address) sheet.getRange(r, 5).setValues([[data.address]]);
+    sheet.getRange(r, 7).setValues([[stamp]]);
+    sheet.getRange(r, 8).setValues([[(Number(v[7]) || 0) + 1]]);
+    sheet.getRange(r, 9).setValues([[(Number(v[8]) || 0) + total]]);
+    return;
+  }
+
+  var row = sheet.getLastRow() + 1;
+  var range = sheet.getRange(row, 1, 1, CUSTOMER_HEADERS.length);
+  range.setNumberFormats([['@', '@', '@', '@', '@', '@', '@', '0', '0', '@']]);
+  range.setValues([[nextCustomerNo_(sheet), data.name || '', phoneN, email, data.address || '', stamp, stamp, 1, total, '新客建檔']]);
+}
+
+// 付款失敗／恢復時調整顧客累計（delta 為 +1 或 -1）
+function adjustCustomer_(ss, phone, delta, total) {
+  var phoneN = normPhone_(phone);
+  if (!phoneN) return;
+  var sheet = getCustomerSheet_(ss);
+  var found = findCustomer_(sheet, phoneN);
+  if (!found) return;
+  var v = found.values;
+  sheet.getRange(found.row, 8).setValues([[Math.max(0, (Number(v[7]) || 0) + delta)]]);
+  sheet.getRange(found.row, 9).setValues([[Math.max(0, (Number(v[8]) || 0) + delta * (Number(total) || 0))]]);
+}
+
+function updateOrder_(ss, sheet, row, data) {
+  var prev = sheet.getRange(row, 1, 1, ORDER_COLS.length).getValues()[0];
+  var prevStatus = prev[orderCol_('status') - 1];
+
+  if (data.status) setText_(sheet, row, 'status', data.status);
+  if (data.paymentMethod) setText_(sheet, row, 'paymentMethod', data.paymentMethod);
+  if (data.paidAt) setText_(sheet, row, 'paidAt', data.paidAt);
+  if (data.paymentType) setText_(sheet, row, 'paymentType', data.paymentType);
+
+  if (data.status) {
+    var wasFailed = isFailed_(prevStatus);
+    var nowFailed = isFailed_(data.status);
+    var phone = prev[orderCol_('phone') - 1] || data.phone;
+    var total = Number(prev[orderCol_('total') - 1]) || Number(data.total) || 0;
+    if (nowFailed && !wasFailed) adjustCustomer_(ss, phone, -1, total);
+    else if (!nowFailed && wasFailed) adjustCustomer_(ss, phone, 1, total);
+  }
 }
 
 function doPost(e) {
   var lock = LockService.getScriptLock();
+  var locked = false;
   try {
     var data = JSON.parse((e && e.postData && e.postData.contents) || '{}');
 
@@ -94,31 +240,58 @@ function doPost(e) {
     if (!data.orderNo) return out_({ status: 'error', message: 'missing orderNo' });
 
     lock.waitLock(20000);
-    var sheet = getSheet_();
-    var row = findRow_(sheet, data.orderNo);
+    locked = true;
+    var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    var sheet = getOrderSheet_(ss);
+    var row = findOrderRow_(sheet, data.orderNo);
 
     if (data.action === 'updateOrder') {
       if (row < 0) {
         // 找不到原訂單（例如下單時寫入失敗）：把這筆當新資料補寫，不要遺失付款紀錄
-        writeRow_(sheet, sheet.getLastRow() + 1, rowValues_(data));
+        appendOrder_(sheet, data);
+        upsertCustomer_(ss, data);
       } else {
-        if (data.status) setText_(sheet, row, 'status', data.status);
-        if (data.paidAt) setText_(sheet, row, 'paidAt', data.paidAt);
-        if (data.paymentType) setText_(sheet, row, 'paymentType', data.paymentType);
+        updateOrder_(ss, sheet, row, data);
       }
     } else if (row < 0) {
-      writeRow_(sheet, sheet.getLastRow() + 1, rowValues_(data));
+      appendOrder_(sheet, data);
+      upsertCustomer_(ss, data);
     } // 同一訂單編號重複送來：視為重送，不重複寫入
 
     return out_({ status: 'ok', orderNo: data.orderNo });
   } catch (err) {
     return out_({ status: 'error', message: String((err && err.message) || err) });
   } finally {
-    try { lock.releaseLock(); } catch (ignore) {}
+    if (locked) {
+      try { lock.releaseLock(); } catch (ignore) {}
+    }
   }
 }
 
-// 瀏覽器開啟網址時的健康檢查
+// 瀏覽器開啟網址時的健康檢查（不碰試算表）
 function doGet() {
   return out_({ status: 'ok', service: 'canmas-orders' });
+}
+
+// 手動測試：在編輯器選 testPost 按「執行」，會在「訂單記錄」「顧客資料」各寫一筆測試資料（不寄信）。
+// 測完請自行刪除那兩列。
+function testPost() {
+  var id = 'CM-TEST-' + Utilities.formatDate(new Date(), 'Asia/Taipei', 'yyMMdd-HHmmss');
+  var res = doPost({
+    postData: {
+      contents: JSON.stringify({
+        orderNo: id,
+        name: '測試伯樂',
+        phone: '0912345678',
+        email: 'unikch@gmail.com',
+        address: '新竹縣竹北市光明六路東二段36號',
+        items: '精品莊園咖啡豆（半磅×2）',
+        total: 1200,
+        note: '合併版 Apps Script 測試',
+        status: '待匯款',
+        paymentMethod: 'ATM匯款'
+      })
+    }
+  });
+  Logger.log(res.getContent());
 }
