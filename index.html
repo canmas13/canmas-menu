@@ -610,13 +610,24 @@ function updateSubmitLabel(){
   if(btn&&!btn.disabled) btn.textContent = method==="card" ? "前往付款" : "確認送出";
 }
 
-// 從綠界「返回商店」回來時顯示提示（付款結果以確認信為準）
-function showReturnBanner(){
+// 從綠界付款後回到網站：主動向後端確認付款結果（不只依賴綠界伺服器通知）
+async function showReturnBanner(){
   const q=new URLSearchParams(location.search).get("order");
   if(!q||!/^CM[0-9A-Z]{6,}$/.test(q)) return;
   const el=document.getElementById("returnBanner");
-  el.innerHTML=`感謝您的訂購！訂單 <b>${esc(q)}</b> 已收到。<br>付款成功後，確認信會寄到您填寫的 Email；若數分鐘後仍未收到，請來信或來電 ${esc(SHOP.brand.phone)}。<button onclick="this.parentNode.style.display='none'" aria-label="關閉">×</button>`;
-  el.style.display="block";
+  const close=`<button onclick="this.parentNode.style.display='none'" aria-label="關閉">×</button>`;
+  const show=(html)=>{ el.innerHTML=html+close; el.style.display="block"; };
+  show(`訂單 <b>${esc(q)}</b> 已收到，正在確認付款結果…`);
+  for(let i=0;i<3;i++){
+    try{
+      const r=await fetch(API_BASE+"/check-payment",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({orderNo:q})});
+      const j=await r.json();
+      if(j.paid){ show(`✅ 付款成功！訂單 <b>${esc(q)}</b> 已確認，確認信已寄到您填寫的 Email。感謝您的訂購！`); return; }
+      if(r.status===404) break;
+    }catch(e){ console.warn("確認付款結果失敗",e); }
+    await new Promise(res=>setTimeout(res,3000));
+  }
+  show(`感謝您的訂購！訂單 <b>${esc(q)}</b> 已收到，目前尚未收到付款成功的結果。<br>若您已完成刷卡，系統會在數分鐘內自動確認並寄出確認信；若一直未收到，請來信或來電 ${esc(SHOP.brand.phone)}。`);
 }
 
 function setTab(r){activeRegion=r;document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.r===r));render();}

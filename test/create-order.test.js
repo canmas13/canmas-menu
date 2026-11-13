@@ -57,7 +57,7 @@ test("信用卡下單：回傳可通過驗章的綠界表單；店主與客人�
   assert.equal(p.ClientBackURL, "https://menu.canmas.com.tw/?order=CM261112K7Q2M");
   assert.equal(p.ChoosePayment, "Credit");
   assert.ok(verifyCheckMacValue(p, STAGE.hashKey, STAGE.hashIV));
-  assert.ok(!("OrderResultURL" in p));
+  assert.equal(p.OrderResultURL, "https://canmasmenu.netlify.app/.netlify/functions/payment-result");
 
   assert.equal(ctx.sent.length, 0);
   assert.equal(ctx.sheetRows[0].status, "待付款（信用卡）");

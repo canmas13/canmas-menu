@@ -20,6 +20,7 @@ const STAGE = {
   hashKey: "pwFHCqoQZGmho4w6",
   hashIV: "EkRm7iFT261dpevs",
   endpoint: "https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5",
+  queryEndpoint: "https://payment-stage.ecpay.com.tw/Cashier/QueryTradeInfo/V5",
 };
 
 function makeDeps(overrides = {}) {

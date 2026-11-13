@@ -63,7 +63,7 @@ function buildItemName(order) {
 }
 
 // 建立送往綠界的表單參數（僅信用卡）
-function buildCheckoutParams(order, { cfg, returnUrl, clientBackUrl, now = new Date() }) {
+function buildCheckoutParams(order, { cfg, returnUrl, clientBackUrl, orderResultUrl, now = new Date() }) {
   const params = {
     MerchantID: cfg.merchantId,
     MerchantTradeNo: order.orderNo, // 13 碼英數，符合綠界 20 碼英數限制
@@ -77,8 +77,47 @@ function buildCheckoutParams(order, { cfg, returnUrl, clientBackUrl, now = new D
     ClientBackURL: clientBackUrl, // 付款完成頁的「返回商店」按鈕
     EncryptType: "1",
   };
+  // 付款完成後由客人的瀏覽器帶結果導回（不依賴綠界伺服器通知能否連到我們）
+  if (orderResultUrl) params.OrderResultURL = orderResultUrl;
   params.CheckMacValue = computeCheckMacValue(params, cfg.hashKey, cfg.hashIV);
   return { action: cfg.endpoint, params };
+}
+
+// 主動向綠界查詢訂單付款狀態（QueryTradeInfo），回傳已驗章的結果；TradeStatus "1" 代表已付款
+async function queryTradeInfo(cfg, orderNo, { fetchImpl = fetch, now = new Date() } = {}) {
+  const req = { MerchantID: cfg.merchantId, MerchantTradeNo: orderNo, TimeStamp: String(Math.floor(now.getTime() / 1000)) };
+  req.CheckMacValue = computeCheckMacValue(req, cfg.hashKey, cfg.hashIV);
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 8000);
+  try {
+    const res = await fetchImpl(cfg.queryEndpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams(req).toString(),
+      signal: ctl.signal,
+    });
+    const text = await res.text();
+    const out = Object.fromEntries(new URLSearchParams(text));
+    if (!verifyCheckMacValue(out, cfg.hashKey, cfg.hashIV)) throw new Error("綠界查詢結果驗章失敗：" + text.slice(0, 120));
+    if (out.MerchantTradeNo !== orderNo || out.MerchantID !== cfg.merchantId) throw new Error("綠界查詢結果與訂單不符");
+    return out;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// 把查詢結果轉成與付款通知相同的格式，交給 settlePayment
+function queryToNotice(q) {
+  return {
+    MerchantID: q.MerchantID,
+    MerchantTradeNo: q.MerchantTradeNo,
+    RtnCode: q.TradeStatus === "1" ? "1" : "0",
+    RtnMsg: q.TradeStatus === "1" ? "交易成功（主動查詢）" : "TradeStatus=" + q.TradeStatus,
+    TradeAmt: q.TradeAmt,
+    PaymentDate: q.PaymentDate,
+    PaymentType: q.PaymentType,
+    TradeNo: q.TradeNo,
+  };
 }
 
 function describePaymentType(type) {
@@ -98,4 +137,6 @@ module.exports = {
   buildItemName,
   buildCheckoutParams,
   describePaymentType,
+  queryTradeInfo,
+  queryToNotice,
 };

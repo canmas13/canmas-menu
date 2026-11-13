@@ -13,6 +13,7 @@ const ECPAY_STAGE = {
   hashKey: "pwFHCqoQZGmho4w6",
   hashIV: "EkRm7iFT261dpevs",
   endpoint: "https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5",
+  queryEndpoint: "https://payment-stage.ecpay.com.tw/Cashier/QueryTradeInfo/V5",
 };
 
 // ECPAY_ENV=production 才會連正式機；預設一律走測試環境，避免誤刷
@@ -30,6 +31,7 @@ function ecpayConfig() {
     hashKey,
     hashIV,
     endpoint: "https://payment.ecpay.com.tw/Cashier/AioCheckOut/V5",
+    queryEndpoint: "https://payment.ecpay.com.tw/Cashier/QueryTradeInfo/V5",
   };
 }
 

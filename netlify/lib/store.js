@@ -13,6 +13,7 @@ function createBlobStore(event) {
   return {
     get: (key) => s.get(key, { type: "json" }),
     set: (key, value) => s.setJSON(key, value),
+    list: async (prefix) => (await s.list({ prefix })).blobs.map((b) => b.key),
   };
 }
 
@@ -23,6 +24,7 @@ function createMemoryStore() {
     set: async (key, value) => {
       m.set(key, JSON.stringify(value));
     },
+    list: async (prefix) => [...m.keys()].filter((k) => k.startsWith(prefix)),
     _map: m,
   };
 }

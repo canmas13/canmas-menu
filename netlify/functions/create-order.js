@@ -79,6 +79,8 @@ function makeHandler(deps = defaultDeps) {
         paid: false,
         status: paymentMethod === "card" ? "待付款（信用卡）" : "待匯款",
         notified: { customer: false, owner: false },
+        // 付款後導回的網站：從預覽站下單就回預覽站，否則回正式站
+        returnBase: origin && isAllowedOrigin(origin) ? origin.replace(/\/$/, "") : deps.shop.brand.shopUrl,
       };
 
       // 先存一份，之後綠界的付款通知才找得回訂單內容
@@ -138,7 +140,8 @@ function makeHandler(deps = defaultDeps) {
         result.ecpay = buildCheckoutParams(order, {
           cfg: deps.ecpay(),
           returnUrl: callbackUrl(event),
-          clientBackUrl: (origin && isAllowedOrigin(origin) ? origin.replace(/\/$/, "") : deps.shop.brand.shopUrl) + "/?order=" + orderNo, // 從預覽站下單就回預覽站
+          orderResultUrl: callbackUrl(event).replace(/\/callback$/, "/payment-result"),
+          clientBackUrl: order.returnBase + "/?order=" + orderNo,
           now,
         });
       }

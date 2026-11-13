@@ -66,6 +66,14 @@ POST /.netlify/functions/create-order
 
 `APPS_SCRIPT_URL`（預設已是現有的 Apps Script 網址；照下節「更新既有部署」做的話網址不變，不用設）、`APPS_SCRIPT_SECRET`、`SHEET_CSV_URL`、`ALLOWED_ORIGINS`（額外允許的前端網域，逗號分隔）、`CALLBACK_BASE_URL`（綠界通知的網域，預設為函式所在網域）。
 
+## 付款結果的三條確認路徑
+
+綠界的伺服器通知（ReturnURL）不一定送得到（測試時就遇過付款成功、但通知完全沒到），所以另外兩條路徑互相備援，全部冪等、不會重複寄信：
+
+1. `callback`（ReturnURL）：綠界伺服器通知。
+2. `payment-result`（OrderResultURL）：客人刷卡完成後，瀏覽器帶著付款結果回到這裡，驗章後結算再導回網站；網站再呼叫 `check-payment` 主動向綠界查詢（QueryTradeInfo）。
+3. `reconcile`：每 10 分鐘（只在正式部署執行）查詢 26 小時內未付款的信用卡單，補登已付款。
+
 ## 上線檢查表
 
 1. 部署（運費已設為 NT$80）。
@@ -100,7 +108,7 @@ POST /.netlify/functions/create-order
 
 ```bash
 npm install
-npm test                 # 65 項自動測試（簽章官方範例、金額、callback、信件、下單流程、Apps Script 邏輯）
+npm test                 # 71 項自動測試（簽章官方範例、金額、callback、信件、下單流程、Apps Script 邏輯）
 npm run preview:email    # 產生信件預覽到 preview/
 ```
 
