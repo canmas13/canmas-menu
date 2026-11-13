@@ -1,0 +1,36 @@
+{
+  "_說明": "店家設定檔，前端（index.html）與後端（Netlify Functions）共用。修改後重新部署即生效。",
+  "brand": {
+    "name": "CANMAS COFFEE",
+    "nameZh": "肯馬仕精品咖啡",
+    "tagline": "精品咖啡豆 · 竹北預約制",
+    "company": "肯馬仕有限公司",
+    "taxId": "93692669",
+    "phone": "03-260-5030",
+    "email": "canmas13@gmail.com",
+    "website": "https://www.canmas.com.tw",
+    "shopUrl": "https://menu.canmas.com.tw"
+  },
+  "shipping": {
+    "freeThreshold": 2000,
+    "fee": 80,
+    "_說明": "fee＝未達免運門檻時的運費（元，整數）。若改成 null，未滿免運門檻的訂單會被系統拒絕，避免收錯運費。"
+  },
+  "roastLevels": ["淺焙", "淺中焙", "中焙", "中深焙", "深焙"],
+  "bank": {
+    "code": "006",
+    "name": "合作金庫",
+    "branch": "六家分行",
+    "account": "3410-7172-16576",
+    "holder": "肯馬仕有限公司"
+  },
+  "order": {
+    "maxLines": 30,
+    "maxQtyPerLine": 99,
+    "maxTotal": 200000
+  },
+  "catalog": {
+    "_說明": "商品表的 Google Sheet 發佈 CSV 網址，須與 index.html 的 SHEET_CSV_URL 相同。後端用它依品名與規格重算金額。",
+    "sheetCsvUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vR7xuhoS9wYuv5_vzG7TzWsQdUjdA7RkwHQJYycnvynDMU0if90IOJEUyLOH-N8Tht6SvLcuwDFtVID/pub?output=csv"
+  }
+}

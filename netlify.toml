@@ -1,6 +1,12 @@
 [build]
-  publish = "."
+  # 只把前端需要的檔案複製到 dist/，避免 node_modules 等被當成靜態檔上傳
+  command = "mkdir -p dist && cp index.html shop-config.json dist/"
+  publish = "dist"
   functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+  included_files = ["shop-config.json"]
 
 [[headers]]
   for = "/*"
@@ -8,3 +14,7 @@
     Access-Control-Allow-Origin = "*"
     Access-Control-Allow-Methods = "GET, POST, OPTIONS"
     Access-Control-Allow-Headers = "Content-Type"
+
+# 每 10 分鐘向綠界對帳一次（只在正式部署執行）
+[functions."reconcile"]
+  schedule = "*/10 * * * *"
