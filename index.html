@@ -129,6 +129,10 @@ select.form-input {
 .success-panel{padding:3rem 1.5rem;text-align:center;}
 .success-title{font-size:18px;font-weight:500;color:var(--cream);margin-bottom:10px;}
 .success-msg{font-size:14px;color:var(--silver);line-height:1.8;margin-bottom: 15px;}
+.line-bind{margin:18px auto 0;max-width:420px;padding:14px 16px;border:1px solid rgba(6,199,85,.45);border-radius:10px;text-align:left;}
+.line-bind-title{font-size:14px;font-weight:600;color:var(--cream);}
+.line-bind-msg{font-size:13px;color:var(--silver);line-height:1.7;margin-top:4px;}
+.line-bind-btn{display:inline-block;margin-top:10px;padding:8px 16px;border-radius:8px;background:#06C755;color:#fff;font-size:14px;font-weight:600;text-decoration:none;}
 .order-num{font-size:13px;color:var(--gold);margin-top:12px;letter-spacing:0.08em;}
 .bank-info { background: var(--bg-2); padding: 15px; border-radius: 8px; text-align: left; font-size: 13px; color: var(--cream); line-height: 1.6; margin-bottom: 15px; border: 1px solid var(--border-blue); }
 
@@ -576,6 +580,7 @@ async function submitOrder(){
         <div class="success-msg">請透過以下帳號匯款，完成後請回覆確認信（或 Email 我們）告知<b>帳號後五碼</b>。</div>
         <div class="bank-info">${bankHTML()}</div>
         <div class="order-num">訂單編號：${esc(result.orderNo)}</div>
+        ${lineBindHTML(result.orderNo, cleanPhone)}
       </div>`;
 
   } catch(e) {
@@ -587,6 +592,20 @@ async function submitOrder(){
     alert("訂單未能送出，下方有顯示原因。您可以稍後再試，或直接聯繫我們。");
     btn.disabled=false;btn.textContent=idleLabel;
   }
+}
+
+// LINE 綁定提示：客人傳「訂單編號 手機末四碼」到官方帳號，之後出貨與補貨提醒用 LINE 通知
+function lineBindHTML(orderNo, phone){
+  const id=SHOP.line&&String(SHOP.line.id||"").trim();
+  if(!id||!orderNo) return "";
+  const last4=String(phone||"").replace(/\D/g,"").slice(-4);
+  const text=last4?`${orderNo} ${last4}`:String(orderNo);
+  const url=`https://line.me/R/oaMessage/${encodeURIComponent(id)}/?${encodeURIComponent(text)}`;
+  return `<div class="line-bind">
+    <div class="line-bind-title">用 LINE 收出貨與補貨通知</div>
+    <div class="line-bind-msg">加入官方帳號 <b>${esc(id)}</b>，傳送「<b>${esc(text)}</b>」${last4?"（訂單編號＋手機末四碼）":"（訂單編號＋下單手機末四碼）"}即可綁定。</div>
+    <a class="line-bind-btn" href="${esc(url)}" target="_blank" rel="noopener">開啟 LINE 一鍵綁定</a>
+  </div>`;
 }
 
 // 以表單 POST 前往綠界付款頁（綠界只接受表單 POST）
@@ -624,7 +643,7 @@ async function showReturnBanner(){
     try{
       const r=await fetch(API_BASE+"/check-payment",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({orderNo:q})});
       const j=await r.json();
-      if(j.paid){ show(`✅ 付款成功！訂單 <b>${esc(q)}</b> 已確認，確認信已寄到您填寫的 Email。感謝您的訂購！`); return; }
+      if(j.paid){ show(`✅ 付款成功！訂單 <b>${esc(q)}</b> 已確認，確認信已寄到您填寫的 Email。感謝您的訂購！`+lineBindHTML(q,"")); return; }
       if(r.status===404) break;
     }catch(e){ console.warn("確認付款結果失敗",e); }
     await new Promise(res=>setTimeout(res,3000));

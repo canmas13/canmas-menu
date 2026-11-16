@@ -164,6 +164,34 @@ ${esc(b.company)} · 統一編號 ${esc(b.taxId)}<br>
 </table></td></tr></table></body></html>`;
 }
 
+// ---------- LINE 綁定 ----------
+
+// 客人傳到官方帳號的綁定文字：「訂單編號 手機末四碼」（三件套的 Bind.gs 會比對後綁定）
+function lineBindText(order) {
+  const last4 = String((order.customer && order.customer.phone) || "").replace(/\D/g, "").slice(-4);
+  return last4 ? `${order.orderNo} ${last4}` : String(order.orderNo);
+}
+
+// 一鍵開啟官方帳號聊天室並預填綁定文字；沒設定 LINE 就回 null
+function lineBindUrl(order, shop) {
+  const id = shop.line && String(shop.line.id || "").trim();
+  if (!id) return null;
+  return `https://line.me/R/oaMessage/${encodeURIComponent(id)}/?${encodeURIComponent(lineBindText(order))}`;
+}
+
+function lineBindBlock(order, shop) {
+  const url = lineBindUrl(order, shop);
+  if (!url) return "";
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:26px;border:1px solid ${C.line};border-radius:12px;">
+<tr><td style="padding:20px 24px;">
+<div style="font-family:${SANS};font-size:15px;color:${C.navy};font-weight:700;">用 LINE 收出貨與補貨通知</div>
+<div style="font-family:${SANS};font-size:13px;line-height:1.8;color:${C.mute};margin-top:6px;">加入 LINE 官方帳號 <b style="color:${C.ink};">${esc(shop.line.id)}</b>，傳送「<span style="font-family:'SFMono-Regular',Menlo,Consolas,monospace;color:${C.ink};">${esc(lineBindText(order))}</span>」（訂單編號＋手機末四碼）即可綁定。</div>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;"><tr><td bgcolor="#06C755" style="background:#06C755;border-radius:8px;">
+<a href="${esc(url)}" style="display:inline-block;padding:10px 20px;font-family:${SANS};font-size:14px;font-weight:700;color:#FFFFFF;text-decoration:none;">開啟 LINE 一鍵綁定</a>
+</td></tr></table>
+</td></tr></table>`;
+}
+
 // ---------- 客人版 ----------
 
 function renderCustomerEmail(order, shop) {
@@ -196,6 +224,7 @@ ${paid ? paidBlock(order) : bankBlock(order, shop)}
 
 ${sectionTitle("收件資訊")}
 ${recipientBlock(order)}
+${lineBindBlock(order, shop)}
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:34px;border-top:1px solid ${C.line};"><tr><td align="center" style="padding-top:26px;font-family:${SANS};font-size:14px;line-height:1.9;color:${C.ink};">
 有任何問題嗎？直接回覆此信，或來電 <a href="tel:${esc(b.phone.replace(/[^\d+]/g, ""))}" style="color:${C.navy};font-weight:700;text-decoration:none;">${esc(b.phone)}</a>。<br>
@@ -267,6 +296,15 @@ function customerText(order, shop, { paid, methodLabel, headline, lead }) {
     `寄送地址：${order.customer.address}`
   );
   if (order.customer.note) parts.push(`備註：${order.customer.note}`);
+  const bindUrl = lineBindUrl(order, shop);
+  if (bindUrl) {
+    parts.push(
+      "",
+      "── 用 LINE 收出貨與補貨通知 ──",
+      `加入 LINE 官方帳號 ${shop.line.id}，傳送「${lineBindText(order)}」（訂單編號＋手機末四碼）即可綁定。`,
+      `一鍵綁定：${bindUrl}`
+    );
+  }
   parts.push(
     "",
     `有任何問題，直接回覆此信或來電 ${b.phone}，請附上訂單編號。`,
@@ -364,4 +402,4 @@ function renderAlertEmail(title, lines, shop) {
   return { subject, html, text };
 }
 
-module.exports = { renderCustomerEmail, renderOwnerEmail, renderAlertEmail, esc, money };
+module.exports = { renderCustomerEmail, renderOwnerEmail, renderAlertEmail, lineBindText, lineBindUrl, esc, money };

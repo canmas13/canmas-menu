@@ -74,3 +74,19 @@ test("信件為 UTF-8 完整 HTML，含預覽文字與寬度限制", () => {
   assert.match(m.html, /max-width:600px/);
   assert.match(m.html, /charset="utf-8"/);
 });
+
+test("客人版：附 LINE 綁定提示（訂單編號＋手機末四碼）與一鍵綁定連結；沒設定 LINE 就不顯示", () => {
+  const { lineBindText, lineBindUrl } = require("../netlify/lib/emailTemplates");
+  assert.equal(lineBindText(order), "CM261112K7Q2M 5678");
+  const url = lineBindUrl(order, shop);
+  assert.equal(url, "https://line.me/R/oaMessage/%40fvs7968m/?CM261112K7Q2M%205678");
+  const m = renderCustomerEmail(order, shop);
+  assert.ok(m.html.includes("用 LINE 收出貨與補貨通知"));
+  assert.ok(m.html.includes("CM261112K7Q2M 5678"));
+  assert.ok(m.html.includes(url));
+  assert.ok(m.text.includes("一鍵綁定：" + url));
+  const paid = renderCustomerEmail({ ...order, paymentMethod: "card", paid: true }, shop);
+  assert.ok(paid.html.includes(url), "已付款信也要有");
+  const noLine = renderCustomerEmail(order, { ...shop, line: { id: "" } });
+  assert.ok(!noLine.html.includes("oaMessage") && !noLine.text.includes("一鍵綁定"));
+});
