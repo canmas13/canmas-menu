@@ -107,7 +107,26 @@ test("reconcile：只查 2 分鐘～26 小時內未付款的信用卡單，已�
   await ctx.store.set("order:CMPAID01", seed({ orderNo: "CMPAID01", createdAt: at(15), paid: true }));
   await ctx.store.set("rl:abc", { n: 1 });
   const res = await makeHandler(ctx.deps)({});
-  assert.deepEqual(JSON.parse(res.body), { checked: 1, settled: 1 });
+  assert.deepEqual(JSON.parse(res.body), { checked: 1, settled: 1, purged: 0 });
   assert.deepEqual(queried, ["CMOK0001"]);
   assert.equal((await ctx.store.get("order:CMOK0001")).paid, true);
+});
+
+test("reconcile：清除超過 90 天的訂單暫存與過期限流紀錄，近期的保留", async () => {
+  const { makeHandler } = require("../netlify/functions/reconcile");
+  const ctx = makeDeps({ deps: { fetchImpl: fakeQuery("0") } });
+  const now = Date.parse("2026-11-12T11:45:12Z");
+  const daysAgo = (d) => new Date(now - d * 86400000).toISOString();
+  await ctx.store.set("order:CMOLD0001", seed({ orderNo: "CMOLD0001", createdAt: daysAgo(91), paid: true }));
+  await ctx.store.set("order:CMOLD0002", seed({ orderNo: "CMOLD0002", createdAt: daysAgo(120), paymentMethod: "atm" }));
+  await ctx.store.set("order:CMKEEP001", seed({ orderNo: "CMKEEP001", createdAt: daysAgo(30), paid: true }));
+  await ctx.store.set("rl:old", { n: 3, resetAt: now - 1000 });
+  await ctx.store.set("rl:live", { n: 1, resetAt: now + 1000 });
+  const res = await makeHandler(ctx.deps)({});
+  assert.equal(JSON.parse(res.body).purged, 2);
+  assert.equal(await ctx.store.get("order:CMOLD0001"), null);
+  assert.equal(await ctx.store.get("order:CMOLD0002"), null);
+  assert.ok(await ctx.store.get("order:CMKEEP001"));
+  assert.equal(await ctx.store.get("rl:old"), null);
+  assert.ok(await ctx.store.get("rl:live"));
 });

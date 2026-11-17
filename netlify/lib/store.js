@@ -14,6 +14,7 @@ function createBlobStore(event) {
     get: (key) => s.get(key, { type: "json" }),
     set: (key, value) => s.setJSON(key, value),
     list: async (prefix) => (await s.list({ prefix })).blobs.map((b) => b.key),
+    delete: (key) => s.delete(key),
   };
 }
 
@@ -25,6 +26,9 @@ function createMemoryStore() {
       m.set(key, JSON.stringify(value));
     },
     list: async (prefix) => [...m.keys()].filter((k) => k.startsWith(prefix)),
+    delete: async (key) => {
+      m.delete(key);
+    },
     _map: m,
   };
 }

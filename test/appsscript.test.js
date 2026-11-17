@@ -44,7 +44,7 @@ function makeSheet(name, rows = []) {
 }
 
 // seed: { 訂單記錄: [[...header], [...row]], 顧客資料: [...] }
-function makeEnv({ secret, seed = {} } = {}) {
+function makeEnv({ secret = "test-secret", seed = {} } = {}) {
   const sheets = {};
   const mails = [];
   for (const [n, rows] of Object.entries(seed)) sheets[n] = makeSheet(n, rows);
@@ -63,7 +63,7 @@ function makeEnv({ secret, seed = {} } = {}) {
   };
   vm.createContext(ctx);
   vm.runInContext(CODE, ctx);
-  const post = (obj) => JSON.parse(ctx.doPost({ postData: { contents: JSON.stringify(obj) } }).text);
+  const post = (obj) => JSON.parse(ctx.doPost({ postData: { contents: JSON.stringify({ secret, ...obj }) } }).text);
   return { ctx, sheets, post, mails };
 }
 
@@ -201,7 +201,7 @@ test("updateOrder 找不到原訂單時補寫一列並建顧客，不遺失付�
 test("缺訂單編號 → error；設了 SECRET 時密碼不符 → unauthorized，且不寫入", () => {
   const e = makeEnv({ secret: "s3cret" });
   assert.equal(e.post({ ...order, secret: "s3cret", orderNo: "" }).message, "missing orderNo");
-  assert.equal(e.post(order).message, "unauthorized");
+  assert.equal(e.post({ ...order, secret: undefined }).message, "unauthorized");
   assert.equal(e.post({ ...order, secret: "wrong" }).message, "unauthorized");
   assert.equal(Object.keys(e.sheets).length, 0);
   assert.equal(e.post({ ...order, secret: "s3cret" }).status, "ok");
@@ -299,4 +299,12 @@ test("Netlify 端：有設 APPS_SCRIPT_SECRET 時請求會附上 secret；沒設
   await callAppsScript({ a: 1 }, { fetchImpl, url: "http://x", secret: "k" });
   await callAppsScript({ a: 1 }, { fetchImpl, url: "http://x", secret: undefined });
   assert.deepEqual(seen, [{ a: 1, secret: "k" }, { a: 1 }]);
+});
+
+test("沒設 SECRET 時一律拒絕寫入（fail closed）", () => {
+  const e = makeEnv({ secret: null });
+  assert.equal(e.post(order).message, "unauthorized");
+  assert.equal(e.post({ ...order, secret: "" }).message, "unauthorized");
+  assert.equal(e.post({ ...paid() }).message, "unauthorized");
+  assert.equal(Object.keys(e.sheets).length, 0);
 });

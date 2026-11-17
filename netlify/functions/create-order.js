@@ -29,8 +29,9 @@ function callbackUrl(event) {
   let base;
   if (override) base = override.replace(/\/$/, "");
   else {
+    // 只信任自己的網域（正式站、分支預覽），避免偽造的 Host 標頭把付款通知導到別處
     const host = header(event, "x-forwarded-host") || header(event, "host") || "";
-    base = /^[a-z0-9.-]+(:\d+)?$/i.test(host) ? "https://" + host : "https://canmasmenu.netlify.app";
+    base = /^[a-z0-9.-]+$/i.test(host) && isAllowedOrigin("https://" + host) ? "https://" + host : "https://canmasmenu.netlify.app";
   }
   return base + "/.netlify/functions/callback";
 }

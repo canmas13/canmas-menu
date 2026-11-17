@@ -298,7 +298,8 @@ function doPost(e) {
     var data = JSON.parse((e && e.postData && e.postData.contents) || '{}');
 
     var secret = PropertiesService.getScriptProperties().getProperty('SECRET');
-    if (secret && data.secret !== secret) return out_({ status: 'error', message: 'unauthorized' });
+    // 沒設 SECRET 也一律拒絕（fail closed）：避免屬性被誤刪時，任何人都能寫入試算表
+    if (!secret || data.secret !== secret) return out_({ status: 'error', message: 'unauthorized' });
     if (!data.orderNo) return out_({ status: 'error', message: 'missing orderNo' });
 
     lock.waitLock(20000);
@@ -356,6 +357,7 @@ function testPost() {
   var res = doPost({
     postData: {
       contents: JSON.stringify({
+        secret: PropertiesService.getScriptProperties().getProperty('SECRET'),
         orderNo: id,
         name: '測試伯樂',
         phone: '0912345678',

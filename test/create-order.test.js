@@ -155,3 +155,15 @@ test("全站上限：每小時最多 40 筆，換 IP、換 Email 也擋得住", 
   assert.equal(last.res.statusCode, 429);
   assert.equal(ctx.sent.filter((m) => m.to === "u40@example.com").length, 0);
 });
+
+test("付款通知網址只信任自己的網域：偽造 Host 一律改回正式網域；分支預覽保留", async () => {
+  const { makeHandler } = require("../netlify/functions/create-order");
+  const run = async (headers) => {
+    const ctx = makeDeps();
+    const res = await makeHandler(ctx.deps)(postEvent({ paymentMethod: "card", customer, items: items1 }, headers));
+    return JSON.parse(res.body).ecpay.params.ReturnURL;
+  };
+  assert.equal(await run({ host: "evil.example.com" }), "https://canmasmenu.netlify.app/.netlify/functions/callback");
+  assert.equal(await run({ "x-forwarded-host": "evil.example.com" }), "https://canmasmenu.netlify.app/.netlify/functions/callback");
+  assert.equal(await run({ host: "deploy-preview-3--canmasmenu.netlify.app" }), "https://deploy-preview-3--canmasmenu.netlify.app/.netlify/functions/callback");
+});
