@@ -19,17 +19,3 @@
 [functions."reconcile"]
   schedule = "*/10 * * * *"
 
-# CANMAS 三件套「營運中心」短網址：/d/<金鑰> → Apps Script 戰情室。
-# 規則本身不含金鑰（金鑰只在短網址裡），所以放在公開的 repo 也安全；換金鑰不用改這裡。
-[[redirects]]
-  from = "/d/:key"
-  to = "https://script.google.com/macros/s/AKfycbxnVgO-IhjUIZ130uW2c9h-HcCiT0QViTHrAM_WAJQOWUHTm66QsauiBc2ytTQIXuLwRA/exec?view=dash&key=:key"
-  status = 302
-  force = true
-
-[[headers]]
-  for = "/d/*"
-  [headers.values]
-    Referrer-Policy = "no-referrer"
-    X-Robots-Tag = "noindex, nofollow"
-    Cache-Control = "no-store"

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>CANMAS 營運中心</title>
+<style>body{font-family:-apple-system,"PingFang TC","Noto Sans TC",sans-serif;background:#111E4A;color:#EEE8D8;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center}p{opacity:.8}</style>
+</head>
+<body>
+<div id="m"><p>開啟 CANMAS 營運中心…</p></div>
+<script>
+// 三件套營運中心短網址：menu.canmas.com.tw/d/#<金鑰>
+// 金鑰放在 # 後面，瀏覽器不會把它送到任何伺服器（GitHub Pages 也看不到），只在這頁轉址時帶給 Apps Script。
+(function () {
+  var EXEC = "https://script.google.com/macros/s/AKfycbxnVgO-IhjUIZ130uW2c9h-HcCiT0QViTHrAM_WAJQOWUHTm66QsauiBc2ytTQIXuLwRA/exec";
+  var k = decodeURIComponent(location.hash.replace(/^#/, ""));
+  if (/^[A-Za-z0-9]{8,64}$/.test(k)) {
+    location.replace(EXEC + "?view=dash&key=" + encodeURIComponent(k));
+  } else {
+    document.getElementById("m").innerHTML = "<p>連結無效，請從主試算表選單「CANMAS → 開啟戰情室」重新取得。</p>";
+  }
+})();
+</script>
+</body>
+</html>
