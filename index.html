@@ -152,6 +152,14 @@ select.form-input {
 .pay-opt b{display:block;font-size:15px;font-weight:500;color:var(--cream);}
 .pay-opt small{display:block;font-size:12px;color:var(--silver-dim);margin-top:3px;line-height:1.6;}
 
+/* 寄送方式（宅配／超商） */
+.ship-options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.ship-opt{display:flex;align-items:center;gap:8px;background:var(--bg-2);border:1px solid var(--border-blue);border-radius:10px;padding:11px 12px;cursor:pointer;font-size:14px;color:var(--cream);}
+.ship-opt:has(input:checked){border-color:var(--gold);background:var(--bg-3);}
+.ship-opt input{accent-color:var(--gold);}
+.cvs-tip{font-size:12px;color:var(--silver-dim);line-height:1.7;margin-top:6px;}
+.cvs-tip a{color:var(--gold-light);}
+
 /* 蜜罐欄位（真人看不到，機器人才會填） */
 .hp-field{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;}
 
@@ -356,6 +364,20 @@ function updateCartBadge(){
 function openCart(){renderCartBody();document.getElementById("overlay").classList.add("show");document.getElementById("cartPanel").classList.add("show");}
 function closeCart(){document.getElementById("overlay").classList.remove("show");document.getElementById("cartPanel").classList.remove("show");}
 
+// 超商取貨：目前為客人手填門市，由店家自行到超商寄店到店。地址以「超商名＋超商取貨｜門市：…」送出，後端驗證與運費規則不變。
+const CVS = {
+  "711":    { label: "7-ELEVEN", lookup: "https://emap.pcsc.com.tw/" },
+  "family": { label: "全家",     lookup: "https://www.family.com.tw/Marketing/zh/Map" },
+  "hilife": { label: "萊爾富",   lookup: "https://www.google.com/maps/search/%E8%90%8A%E7%88%BE%E5%AF%8C" }
+};
+function shipMode(){ return (document.querySelector('input[name="ship"]:checked')||{}).value || "home"; }
+function updateShipMode(){
+  const mode = shipMode(), cvs = CVS[mode];
+  document.getElementById("home-block").style.display = cvs ? "none" : "";
+  document.getElementById("cvs-block").style.display = cvs ? "" : "none";
+  if (cvs) document.getElementById("cvs-lookup").href = cvs.lookup;
+}
+
 function updateDistricts() {
   const city = document.getElementById("f-city").value;
   const distSelect = document.getElementById("f-district");
@@ -444,6 +466,25 @@ function renderCartBody(){
       <div class="form-group"><label class="form-label">Email<span>* 必填</span></label><input class="form-input" id="f-email" type="email" placeholder="請輸入電子郵件信箱"></div>
       
       <div class="form-group">
+        <label class="form-label">寄送方式</label>
+        <div class="ship-options">
+          <label class="ship-opt"><input type="radio" name="ship" value="home" checked onchange="updateShipMode()">宅配到府</label>
+          <label class="ship-opt"><input type="radio" name="ship" value="711" onchange="updateShipMode()">7-ELEVEN 取貨</label>
+          <label class="ship-opt"><input type="radio" name="ship" value="family" onchange="updateShipMode()">全家 取貨</label>
+          <label class="ship-opt"><input type="radio" name="ship" value="hilife" onchange="updateShipMode()">萊爾富 取貨</label>
+        </div>
+      </div>
+
+      <div class="form-group" id="cvs-block" style="display:none;">
+        <label class="form-label">取貨門市<span>* 必填</span></label>
+        <div class="address-row">
+          <input class="form-input" id="f-cvs-name" type="text" maxlength="40" placeholder="門市名稱，例如：竹北光明門市 (必填)" style="flex:2;">
+          <input class="form-input" id="f-cvs-id" type="text" inputmode="numeric" maxlength="8" oninput="this.value=this.value.replace(/\D/g,'')" placeholder="店號 (選填)" style="flex:1;">
+        </div>
+        <div class="cvs-tip">不確定門市名稱？<a id="cvs-lookup" href="#" target="_blank" rel="noopener">查詢門市</a>。取貨時需核對身分證件，<b>姓名請填證件上的真實姓名</b>，電話請填手機（到店會簡訊通知）。</div>
+      </div>
+
+      <div class="form-group" id="home-block">
         <label class="form-label">寄送地址<span>* 必填</span></label>
         <div class="address-row">
           <select class="form-input" id="f-city" onchange="updateDistricts()" style="flex:1;">
@@ -489,9 +530,12 @@ async function submitOrder(){
   const name=document.getElementById("f-name").value.trim();
   const cleanPhone=document.getElementById("f-phone").value.trim();
   const email=document.getElementById("f-email").value.trim();
-  const city=document.getElementById("f-city").value;
-  const dist=document.getElementById("f-district").value;
-  const addrDetail=document.getElementById("f-addr-detail").value.trim();
+  const mode=shipMode(), cvs=CVS[mode];
+  let city=document.getElementById("f-city").value;
+  let dist=document.getElementById("f-district").value;
+  let addrDetail=document.getElementById("f-addr-detail").value.trim();
+  const cvsName=(document.getElementById("f-cvs-name")||{value:""}).value.trim();
+  const cvsId=(document.getElementById("f-cvs-id")||{value:""}).value.trim();
   const note=document.getElementById("f-note").value.trim();
   
   const noRoast = (SHOP.roastLevels||[]).length ? cart.findIndex(c=>!c.roast) : -1;
@@ -522,10 +566,20 @@ async function submitOrder(){
   }
 
   if (!email) { alert("請輸入電子郵件信箱"); document.getElementById("f-email").focus(); return; }
+  if (cvs) {
+    if (!cleanPhone.startsWith("09")) { alert("超商取貨請填手機號碼（09 開頭），到店時會簡訊通知"); document.getElementById("f-phone").focus(); return; }
+    if (cvsName.length < 2) { alert("請輸入取貨門市名稱"); document.getElementById("f-cvs-name").focus(); return; }
+    // 對應後端欄位：city＝超商、district＝「超商取貨」、addressDetail＝「｜門市：…」（後端要求至少 5 字）
+    // 送出後地址會是：7-ELEVEN超商取貨｜門市：竹北光明門市（店號 123456）
+    city = cvs.label;
+    dist = "超商取貨";
+    addrDetail = "｜門市：" + cvsName + (cvsId ? "（店號 " + cvsId + "）" : "");
+  } else {
   if (!city) { alert("請選擇寄送縣市"); document.getElementById("f-city").focus(); return; }
   if (!dist) { alert("請選擇鄉鎮市區"); document.getElementById("f-district").focus(); return; }
   if (!addrDetail) { alert("請輸入詳細地址路段與門號"); document.getElementById("f-addr-detail").focus(); return; }
   if (addrDetail.length < 5) { alert("請再檢查地址，輸入正確的路段、門號或樓層資訊（至少5個字）"); document.getElementById("f-addr-detail").focus(); return; }
+  }
 
   const btn=document.querySelector(".submit-btn");
   const method=(document.querySelector('input[name="pay"]:checked')||{}).value||"atm";
