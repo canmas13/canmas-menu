@@ -93,6 +93,9 @@ body{background:var(--bg);color:var(--cream);font-family:'Noto Serif TC',serif;m
 .cart-item-detail{font-size:12px;color:var(--silver-dim);margin-top:3px;}
 .cart-item-subtotal{font-size:13px;color:var(--gold-light);margin-top:3px;}
 .cart-item-remove{background:none;border:none;color:var(--silver-dark);cursor:pointer;font-size:20px;}
+.cart-item-controls{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;}
+.cart-item-controls .roast-select{margin-top:0;}
+.qty-btn:disabled{opacity:0.35;cursor:not-allowed;}
 .cart-empty{padding:2.5rem;text-align:center;color:var(--silver-dark);font-size:14px;}
 
 .cart-total{padding:14px 1.5rem;border-top:1px solid var(--border-gold);display:flex;justify-content:space-between;align-items:center;background:var(--bg-2);}
@@ -346,12 +349,25 @@ function addToCart(idx){
   const[size,price]=sel.value.split("|");
   const qty=getQty(idx);
   const exist=cart.find(c=>c.name===d.name&&c.size===size);
-  if(exist){exist.qty+=qty;}else{cart.push({name:d.name,size,price:Number(price),qty,roast:""});}
+  if(exist){exist.qty=Math.min(maxQtyPerLine(), exist.qty+qty);}else{cart.push({name:d.name,size,price:Number(price),qty,roast:""});}
   updateCartBadge();
 }
 
 function setRoast(i,v){ if(cart[i]) cart[i].roast=v; const el=document.getElementById(`roast-${i}`); if(el) el.classList.toggle("missing", !v); }
-function removeFromCart(i){cart.splice(i,1);updateCartBadge();renderCartBody();}
+function removeFromCart(i){cart.splice(i,1);updateCartBadge();refreshCartTop();}
+function maxQtyPerLine(){ return (SHOP.order&&SHOP.order.maxQtyPerLine)||99; }
+function changeCartQty(i,delta){
+  const c=cart[i]; if(!c) return;
+  const q=Math.min(maxQtyPerLine(), Math.max(1, Number(c.qty)+delta));
+  if(q===c.qty) return;
+  c.qty=q; updateCartBadge(); refreshCartTop();
+}
+/** 只重畫商品與金額區，保留客人已填的收件資料 */
+function refreshCartTop(){
+  const top=document.getElementById("cart-top");
+  if(!cart.length || !top){ renderCartBody(); return; }
+  top.innerHTML=cartTopHtml();
+}
 function cartTotal(){return cart.reduce((s,c)=>s+c.price*c.qty,0);}
 
 function updateCartBadge(){
@@ -422,9 +438,7 @@ function copyDebug(){
   });
 }
 
-function renderCartBody(){
-  const el=document.getElementById("cartBody");
-  if(!cart.length){el.innerHTML=`<div class="cart-empty">清單是空的</div>`;return;}
+function cartTopHtml(){
   const sub=cartTotal();
   const ship=shippingFor(sub);
   const grand=sub+(ship||0);
@@ -433,17 +447,25 @@ function renderCartBody(){
     ? `<span class="free">免運費</span>`
     : ship===null ? `<span>—</span>` : `<span>${money(ship)}</span>`;
   const shipHint = gap>0 ? `<div class="ship-hint">再購 ${money(gap)} 即享免運</div>` : "";
-  el.innerHTML=`
+  const maxQ=maxQtyPerLine();
+  return `
     <div class="cart-items">${cart.map((c,i)=>`
       <div class="cart-item">
         <div class="cart-item-info">
           <div class="cart-item-name">${esc(c.name)}</div>
-          <div class="cart-item-detail">${esc(c.size)} × ${Number(c.qty)}</div>
-          <select class="size-select roast-select" id="roast-${i}" onchange="setRoast(${i},this.value)" aria-label="烘焙度">
-            <option value="">選擇烘焙度（必選）</option>
-            ${(SHOP.roastLevels||[]).map(r=>`<option value="${esc(r)}"${c.roast===r?" selected":""}>${esc(r)}</option>`).join("")}
-          </select>
-          <div class="cart-item-subtotal">$${(c.price*c.qty).toLocaleString()}</div>
+          <div class="cart-item-detail">${esc(c.size)}・單價 ${money(c.price)}</div>
+          <div class="cart-item-controls">
+            <select class="size-select roast-select" id="roast-${i}" onchange="setRoast(${i},this.value)" aria-label="烘焙度">
+              <option value="">選擇烘焙度（必選）</option>
+              ${(SHOP.roastLevels||[]).map(r=>`<option value="${esc(r)}"${c.roast===r?" selected":""}>${esc(r)}</option>`).join("")}
+            </select>
+            <div class="qty-wrap" aria-label="數量">
+              <button class="qty-btn" onclick="changeCartQty(${i},-1)" ${c.qty<=1?"disabled":""} aria-label="減少">−</button>
+              <span class="qty-val">${Number(c.qty)}</span>
+              <button class="qty-btn" onclick="changeCartQty(${i},1)" ${c.qty>=maxQ?"disabled":""} aria-label="增加">+</button>
+            </div>
+          </div>
+          <div class="cart-item-subtotal">${money(c.price*c.qty)}</div>
         </div>
         <button class="cart-item-remove" onclick="removeFromCart(${i})">×</button>
       </div>`).join("")}
@@ -453,7 +475,14 @@ function renderCartBody(){
       <div class="sum-row"><span>運費（滿 ${money(SHOP.shipping.freeThreshold)} 免運）</span>${shipRow}</div>
       ${shipHint}
       <div class="sum-row grand"><span class="cart-total-label">應付總額</span><span class="cart-total-amount">${money(grand)}</span></div>
-    </div>
+    </div>`;
+}
+
+function renderCartBody(){
+  const el=document.getElementById("cartBody");
+  if(!cart.length){el.innerHTML=`<div class="cart-empty">清單是空的</div>`;return;}
+  el.innerHTML=`
+    <div id="cart-top">${cartTopHtml()}</div>
     <div class="order-form">
       <div class="form-section-title">收件資訊與付款方式</div>
       <div class="form-row">
